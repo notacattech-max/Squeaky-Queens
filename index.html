@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Squeaky Queens — Your home, royally cleaned.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --teal:#0e6e56;--teal-lt:#e1f5ee;--teal-md:#1d9e75;
+    --gold:#c9963a;--gold-lt:#fdf3e3;--cream:#faf9f6;
+    --ink:#1a1a18;--muted:#6b6b67;--border:#e2e0d8;
+    --white:#ffffff;--danger:#c0392b;--radius:12px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);font-size:15px;line-height:1.6;}
+  h1,h2,h3{font-family:'Playfair Display',serif;line-height:1.2;}
+  .screen{display:none;min-height:100vh;}.screen.active{display:block;}
+  nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .nav-brand{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--teal);cursor:pointer;display:flex;align-items:center;gap:8px;}
+  .nav-brand span{color:var(--gold);}
+  .nav-links{display:flex;gap:1rem;align-items:center;}
+  .nav-links a{font-size:13px;color:var(--muted);text-decoration:none;cursor:pointer;}
+  .nav-links a:hover{color:var(--teal);}
+  .btn-nav{background:var(--teal);color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;}
+  .btn-nav:hover{background:#0a5a45;}
+  .btn-primary{background:var(--teal);color:#fff;border:none;padding:14px 28px;border-radius:var(--radius);font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;width:100%;transition:background .15s;}
+  .btn-primary:hover{background:#0a5a45;}
+  .btn-primary:disabled{background:#aaa;cursor:not-allowed;}
+  .btn-secondary{background:transparent;color:var(--teal);border:1.5px solid var(--teal);padding:12px 24px;border-radius:var(--radius);font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;width:100%;transition:all .15s;font-weight:500;}
+  .btn-secondary:hover{background:var(--teal-lt);}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+  .btn-ghost:hover{border-color:var(--teal);color:var(--teal);}
+  .btn-danger{background:var(--danger);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+  .btn-sm{padding:6px 14px;font-size:13px;width:auto;}
+  .card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:1.5rem;}
+  label{font-size:13px;font-weight:500;color:var(--muted);display:block;margin-bottom:6px;letter-spacing:.02em;text-transform:uppercase;}
+  input[type=text],input[type=email],input[type=tel],input[type=password],input[type=date],input[type=number],select,textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--white);outline:none;transition:border-color .15s;}
+  input:focus,select:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(14,110,86,.1);}
+  .form-group{margin-bottom:1.25rem;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+  .badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;letter-spacing:.03em;}
+  .badge-teal{background:var(--teal-lt);color:var(--teal);}
+  .badge-gold{background:var(--gold-lt);color:var(--gold);}
+  .badge-gray{background:#f1f0eb;color:var(--muted);}
+  .badge-green{background:#e8f5e9;color:#2e7d32;}
+  .badge-red{background:#fdecea;color:var(--danger);}
+  .badge-orange{background:#fff3e0;color:#e65100;}
+  .divider{border:none;border-top:1px solid var(--border);margin:1.5rem 0;}
+  .page-wrap{max-width:780px;margin:0 auto;padding:2rem 1.5rem;}
+  .toast{position:fixed;bottom:2rem;right:2rem;background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateY(0);}
+  .toast.success{background:var(--teal);}
+  .toast.error{background:var(--danger);}
+
+  /* ── LANDING ── */
+  .hero{background:var(--teal);color:#fff;padding:5rem 2rem 4rem;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'♛';position:absolute;font-size:320px;opacity:.04;top:-60px;right:-40px;pointer-events:none;}
+  .hero h1{font-size:clamp(2.4rem,5vw,3.8rem);color:#fff;margin-bottom:.75rem;}
+  .hero h1 em{color:var(--gold);font-style:normal;}
+  .hero p{font-size:1.1rem;opacity:.85;max-width:520px;margin:0 auto 2rem;}
+  .hero-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+  .btn-hero-primary{background:var(--gold);color:var(--ink);border:none;padding:15px 32px;border-radius:var(--radius);font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-hero-primary:hover{background:#b8852e;}
+  .btn-hero-secondary{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.5);padding:15px 32px;border-radius:var(--radius);font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+  .btn-hero-secondary:hover{border-color:#fff;}
+  .trust-bar{background:var(--white);border-bottom:1px solid var(--border);display:flex;justify-content:center;gap:2.5rem;padding:1rem 2rem;flex-wrap:wrap;}
+  .trust-item{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+  .trust-item strong{color:var(--ink);}
+  .section{padding:3.5rem 2rem;}
+  .section-title{text-align:center;margin-bottom:2.5rem;}
+  .section-title h2{font-size:2rem;margin-bottom:.5rem;}
+  .section-title p{color:var(--muted);max-width:480px;margin:0 auto;}
+  .cleaners-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.5rem;max-width:900px;margin:0 auto;}
+  .cleaner-card{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:1.75rem;cursor:pointer;transition:all .2s;}
+  .cleaner-card:hover{border-color:var(--teal-md);transform:translateY(-3px);box-shadow:0 8px 24px rgba(14,110,86,.1);}
+  .cleaner-avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:1rem;}
+  .av-default{background:var(--teal-lt);color:var(--teal);}
+  .cleaner-name{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;margin-bottom:4px;}
+  .cleaner-zone{font-size:13px;color:var(--muted);margin-bottom:12px;}
+  .stars{color:var(--gold);font-size:14px;margin-bottom:12px;}
+  .cleaner-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.25rem;}
+  .how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:700px;margin:0 auto;}
+  .how-step{text-align:center;padding:1.5rem 1rem;}
+  .how-num{width:44px;height:44px;border-radius:50%;background:var(--teal);color:#fff;font-family:'Playfair Display',serif;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;}
+  .how-step h3{font-size:1rem;margin-bottom:.4rem;}
+  .how-step p{font-size:13px;color:var(--muted);}
+  .pricing-table{max-width:680px;margin:0 auto;border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+  .pricing-table table{width:100%;border-collapse:collapse;font-size:14px;}
+  .pricing-table th{background:var(--teal);color:#fff;padding:12px 16px;text-align:left;font-weight:500;font-family:'DM Sans',sans-serif;}
+  .pricing-table td{padding:12px 16px;border-top:1px solid var(--border);}
+  .pricing-table tr:nth-child(even) td{background:var(--cream);}
+  .footer-cta{background:var(--teal);color:#fff;text-align:center;padding:3.5rem 2rem;}
+  .footer-cta h2{color:#fff;font-size:2rem;margin-bottom:.75rem;}
+  .footer-cta p{opacity:.8;margin-bottom:2rem;}
+
+  /* ── BOOKING ── */
+  .booking-header{background:var(--teal);color:#fff;padding:2rem;text-align:center;}
+  .booking-header h2{color:#fff;font-size:1.6rem;margin-bottom:.25rem;}
+  .booking-header p{opacity:.8;font-size:14px;}
+  .booking-layout{display:grid;grid-template-columns:1fr 320px;gap:2rem;max-width:900px;margin:2rem auto;padding:0 1.5rem;}
+  .booking-form-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:1.75rem;margin-bottom:1rem;}
+  .booking-form-card h3{font-size:.85rem;margin-bottom:1.25rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-family:'DM Sans',sans-serif;font-weight:500;}
+  .cleaner-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.75rem;margin-bottom:1.25rem;}
+  .cleaner-opt{border:1.5px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:all .15s;text-align:center;}
+  .cleaner-opt:hover{border-color:var(--teal-md);}
+  .cleaner-opt.selected{border-color:var(--teal);background:var(--teal-lt);}
+  .cleaner-opt .opt-name{font-weight:500;font-size:14px;margin-bottom:2px;}
+  .cleaner-opt .opt-zone{font-size:11px;color:var(--muted);}
+  .service-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.25rem;}
+  .service-opt{border:1.5px solid var(--border);border-radius:10px;padding:12px 8px;cursor:pointer;transition:all .15s;text-align:center;}
+  .service-opt:hover{border-color:var(--teal-md);}
+  .service-opt.selected{border-color:var(--teal);background:var(--teal-lt);}
+  .service-opt .svc-name{font-size:13px;font-weight:500;margin-bottom:2px;}
+  .service-opt .svc-desc{font-size:11px;color:var(--muted);}
+  .size-opts{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:1.25rem;}
+  .size-opt{border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .15s;}
+  .size-opt:hover{border-color:var(--teal-md);}
+  .size-opt.selected{border-color:var(--teal);background:var(--teal-lt);}
+  .size-opt .sz-name{font-size:13px;font-weight:500;}
+  .size-opt .sz-price{font-size:12px;color:var(--teal);font-weight:500;}
+  .time-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1.25rem;}
+  .time-slot{border:1px solid var(--border);border-radius:8px;padding:8px 4px;font-size:13px;cursor:pointer;text-align:center;transition:all .15s;}
+  .time-slot:hover{border-color:var(--teal-md);background:var(--teal-lt);}
+  .time-slot.selected{border-color:var(--teal);background:var(--teal-lt);color:var(--teal);font-weight:500;}
+  .time-slot.blocked{opacity:.35;cursor:not-allowed;background:#f5f5f5;}
+  .summary-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:1.5rem;position:sticky;top:80px;}
+  .summary-card h3{font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:1rem;font-family:'DM Sans',sans-serif;font-weight:500;}
+  .summary-row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:.6rem;}
+  .summary-row.total{font-weight:500;font-size:16px;padding-top:.75rem;border-top:1px solid var(--border);margin-top:.75rem;}
+  .price-big{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--teal);text-align:center;margin:1rem 0;}
+
+  /* ── CHECKOUT ── */
+  .checkout-layout{display:grid;grid-template-columns:1fr 320px;gap:2rem;max-width:900px;margin:2rem auto;padding:0 1.5rem;}
+  .stripe-mock{background:var(--teal);color:#fff;border-radius:16px;padding:2rem;text-align:center;}
+  .stripe-mock h3{color:#fff;font-size:1.1rem;margin-bottom:.5rem;}
+  .stripe-mock p{opacity:.8;font-size:13px;margin-bottom:1.5rem;}
+  .stripe-mock .amount{font-family:'Playfair Display',serif;font-size:2.5rem;font-weight:700;color:var(--gold);margin-bottom:1.5rem;}
+
+  /* ── CONFIRM ── */
+  .confirm-wrap{max-width:560px;margin:3rem auto;padding:0 1.5rem;text-align:center;}
+  .confirm-icon{width:80px;height:80px;border-radius:50%;background:var(--teal);color:#fff;font-size:36px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;}
+  .confirm-wrap h2{font-size:2rem;margin-bottom:.75rem;}
+  .confirm-wrap p{color:var(--muted);margin-bottom:2rem;}
+  .confirm-details{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:1.5rem;text-align:left;margin-bottom:1.5rem;}
+  .confirm-row{display:flex;justify-content:space-between;font-size:14px;padding:.5rem 0;border-bottom:1px solid var(--border);}
+  .confirm-row:last-child{border-bottom:none;}
+  .confirm-row span:first-child{color:var(--muted);}
+  .confirm-row span:last-child{font-weight:500;}
+
+  /* ── CLEANER SIGNUP ── */
+  .signup-header{background:var(--teal);color:#fff;padding:3rem 2rem;text-align:center;}
+  .signup-header h1{color:#fff;font-size:2rem;margin-bottom:.5rem;}
+  .signup-header p{opacity:.8;}
+  .signup-wrap{max-width:620px;margin:2rem auto;padding:0 1.5rem;}
+  .day-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:1.25rem;}
+  .day-opt{border:1.5px solid var(--border);border-radius:8px;padding:8px;text-align:center;font-size:13px;cursor:pointer;transition:all .15s;}
+  .day-opt:hover{border-color:var(--teal-md);}
+  .day-opt.selected{border-color:var(--teal);background:var(--teal-lt);color:var(--teal);font-weight:500;}
+  .photo-upload{border:2px dashed var(--border);border-radius:12px;padding:2rem;text-align:center;cursor:pointer;transition:all .15s;}
+  .photo-upload:hover{border-color:var(--teal-md);background:var(--teal-lt);}
+  .photo-preview{width:80px;height:80px;border-radius:50%;object-fit:cover;margin:0 auto .75rem;display:block;}
+
+  /* ── CLEANER PORTAL ── */
+  .portal-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 60px);}
+  .portal-sidebar{background:var(--ink);padding:1.5rem 0;}
+  .portal-sidebar .nav-item{display:flex;align-items:center;gap:10px;padding:10px 1.5rem;font-size:14px;color:rgba(255,255,255,.6);cursor:pointer;transition:all .15s;}
+  .portal-sidebar .nav-item:hover{color:#fff;background:rgba(255,255,255,.05);}
+  .portal-sidebar .nav-item.active{color:#fff;background:rgba(255,255,255,.1);border-left:3px solid var(--gold);}
+  .portal-sidebar .nav-icon{font-size:16px;}
+  .portal-content{padding:2rem;background:var(--cream);}
+  .portal-section{display:none;}.portal-section.active{display:block;}
+  .portal-section h2{font-size:1.4rem;margin-bottom:1.5rem;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.5rem;margin-bottom:1.5rem;}
+  .cal-header{font-size:11px;text-align:center;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:.4rem 0;}
+  .cal-day{border:1px solid var(--border);border-radius:8px;padding:8px 4px;text-align:center;font-size:13px;cursor:pointer;transition:all .15s;background:var(--white);}
+  .cal-day:hover{border-color:var(--teal-md);}
+  .cal-day.available{background:var(--teal-lt);border-color:var(--teal-md);color:var(--teal);}
+  .cal-day.blocked{background:#fdecea;border-color:#f5c6c2;color:var(--danger);}
+  .cal-day.past{opacity:.3;cursor:not-allowed;}
+  .tier-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.75rem;align-items:center;margin-bottom:.75rem;}
+  .tier-row input{margin-bottom:0;}
+  .tier-label{font-size:13px;font-weight:500;color:var(--ink);}
+
+  /* ── ADMIN ── */
+  .admin-header{background:var(--ink);color:#fff;padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;}
+  .admin-header h2{color:#fff;font-size:1.1rem;font-family:'DM Sans',sans-serif;font-weight:500;}
+  .admin-wrap{max-width:1100px;margin:0 auto;padding:2rem 1.5rem;}
+  .metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+  .metric-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.25rem;}
+  .metric-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem;}
+  .metric-val{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--teal);}
+  .admin-tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;border-bottom:1px solid var(--border);padding-bottom:0;}
+  .admin-tab{padding:10px 20px;font-size:14px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;font-family:'DM Sans',sans-serif;}
+  .admin-tab.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:500;}
+  .admin-panel{display:none;}.admin-panel.active{display:block;}
+  .data-table{background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+  .table-header{padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+  .table-header h3{font-size:.95rem;font-family:'DM Sans',sans-serif;font-weight:500;}
+  table.tbl{width:100%;border-collapse:collapse;font-size:13px;}
+  table.tbl th{padding:10px 16px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:.04em;}
+  table.tbl td{padding:12px 16px;border-bottom:1px solid var(--border);}
+  table.tbl tr:last-child td{border-bottom:none;}
+  table.tbl tr:hover td{background:var(--cream);}
+  .login-wrap{max-width:380px;margin:5rem auto;padding:0 1.5rem;}
+  .login-card{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:2.5rem;text-align:center;}
+  .login-card h2{font-size:1.5rem;margin-bottom:.5rem;}
+  .login-card p{color:var(--muted);font-size:13px;margin-bottom:1.75rem;}
+  .error-msg{color:var(--danger);font-size:13px;margin-top:.5rem;}
+  .pending-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+  .pending-info h4{font-size:15px;font-weight:500;margin-bottom:2px;}
+  .pending-info p{font-size:13px;color:var(--muted);}
+  .pending-actions{display:flex;gap:.5rem;flex-shrink:0;}
+
+  @media(max-width:720px){
+    .booking-layout,.checkout-layout{grid-template-columns:1fr;}
+    .form-row{grid-template-columns:1fr;}
+    .how-grid{grid-template-columns:1fr;}
+    .metrics-grid{grid-template-columns:repeat(2,1fr);}
+    .portal-layout{grid-template-columns:1fr;}
+    .portal-sidebar{display:flex;overflow-x:auto;padding:.5rem;}
+    .portal-sidebar .nav-item{flex-direction:column;gap:4px;font-size:11px;padding:.75rem 1rem;white-space:nowrap;}
+    .tier-row{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+<!-- ═══════════════════ SCREEN: HOME ═══════════════════ -->
+<div id="screen-home" class="screen active">
+  <nav>
+    <div class="nav-brand" onclick="showScreen('home')">Squeaky <span>Queens</span></div>
+    <div class="nav-links">
+      <a onclick="document.getElementById('pricing-section').scrollIntoView({behavior:'smooth'})">Pricing</a>
+      <a onclick="showScreen('cleaner-signup')">Join as cleaner</a>
+      <a onclick="showScreen('admin-gate')">Admin</a>
+      <button class="btn-nav" onclick="startBooking('any')">Book now</button>
+    </div>
+  </nav>
+  <div class="hero">
+    <div style="display:inline-block;background:rgba(255,255,255,.15);color:#fff;font-size:12px;padding:4px 14px;border-radius:20px;margin-bottom:14px;letter-spacing:.04em;">Serving Greater LA</div>
+    <h1>Your home,<br/><em>royally</em> cleaned.</h1>
+    <p>Trusted, vetted cleaners serving the LA area. Same person every time — no strangers, no surprises.</p>
+    <div class="hero-actions">
+      <button class="btn-hero-primary" onclick="startBooking('any')">Book a clean</button>
+      <button class="btn-hero-secondary" onclick="document.getElementById('cleaners-section').scrollIntoView({behavior:'smooth'})">Meet the queens ↓</button>
+    </div>
+  </div>
+  <div class="trust-bar">
+    <div class="trust-item">♛ <strong>Background checked</strong></div>
+    <div class="trust-item">★ <strong>4.9 avg rating</strong></div>
+    <div class="trust-item">↻ <strong>Same cleaner every time</strong></div>
+    <div class="trust-item">✓ <strong>Stripe-secured payments</strong></div>
+  </div>
+  <div class="section" id="cleaners-section">
+    <div class="section-title">
+      <h2>Meet the Queens</h2>
+      <p>Real people. Real reviews. Pick your queen or let us match you.</p>
+    </div>
+    <div class="cleaners-grid" id="cleaners-list">
+      <div style="text-align:center;color:var(--muted);padding:2rem;grid-column:1/-1">Loading cleaners…</div>
+    </div>
+  </div>
+  <div class="section" style="background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div class="section-title"><h2>How it works</h2></div>
+    <div class="how-grid">
+      <div class="how-step"><div class="how-num">1</div><h3>Pick your queen</h3><p>Browse profiles and choose who cleans your home — or let us match you by area.</p></div>
+      <div class="how-step"><div class="how-num">2</div><h3>Choose a time</h3><p>Select your date, service type, and home size. See your price instantly.</p></div>
+      <div class="how-step"><div class="how-num">3</div><h3>Pay securely, relax</h3><p>Pay via Stripe before the job. Your home will be spotless when you return.</p></div>
+    </div>
+  </div>
+  <div class="section" id="pricing-section">
+    <div class="section-title">
+      <h2>Transparent pricing</h2>
+      <p>No hidden fees. Know your price before you book.</p>
+    </div>
+    <div class="pricing-table">
+      <table>
+        <thead><tr><th>Home size</th><th>Standard</th><th>Deep clean</th><th>Move-in / out</th></tr></thead>
+        <tbody>
+          <tr><td>Studio / 1BR</td><td>$145</td><td>$195</td><td>$220</td></tr>
+          <tr><td>2 bedroom</td><td>$185</td><td>$245</td><td>$275</td></tr>
+          <tr><td>3 bedroom</td><td>$225</td><td>$295</td><td>$335</td></tr>
+          <tr><td>4 bedroom+</td><td>$275</td><td>$360</td><td>$400</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:1rem;">First-time clean? Use code <strong>ROYAL20</strong> for 20% off.</p>
+  </div>
+  <div class="footer-cta">
+    <h2>Ready for a royal clean?</h2>
+    <p>Serving the Valley, LA, and South Bay. Book in under 2 minutes.</p>
+    <button class="btn-hero-primary" onclick="startBooking('any')">Book now →</button>
+    <p style="margin-top:1.5rem;opacity:.6;font-size:13px;">Are you a cleaner? <a onclick="showScreen('cleaner-signup')" style="color:#fff;cursor:pointer;text-decoration:underline;">Join the Queens →</a></p>
+  </div>
+</div>
+
+<!-- ═══════════════════ SCREEN: BOOKING ═══════════════════ -->
+<div id="screen-booking" class="screen">
+  <nav>
+    <div class="nav-brand" onclick="showScreen('home')">Squeaky <span>Queens</span></div>
+    <div class="nav-links"><button class="btn-ghost" onclick="showScreen('home')">← Back</button></div>
+  </nav>
+  <div class="booking-header"><h2>Book your clean</h2><p>Fill in the details below — your price updates instantly.</p></div>
+  <div class="booking-layout">
+    <div>
+      <div class="booking-form-card">
+        <h3>Your cleaner</h3>
+        <div class="cleaner-picker" id="booking-cleaner-picker"></div>
+        <h3>Service type</h3>
+        <div class="service-opts">
+          <div class="service-opt" id="svc-standard" onclick="selectService('standard','Standard')"><div class="svc-name">Standard</div><div class="svc-desc">Regular maintenance</div></div>
+          <div class="service-opt" id="svc-deep" onclick="selectService('deep','Deep clean')"><div class="svc-name">Deep clean</div><div class="svc-desc">Full top-to-bottom</div></div>
+          <div class="service-opt" id="svc-moveinout" onclick="selectService('moveinout','Move-in / out')"><div class="svc-name">Move-in/out</div><div class="svc-desc">Empty home detail</div></div>
+        </div>
+        <h3>Home size</h3>
+        <div class="size-opts" id="size-opts"></div>
+      </div>
+      <div class="booking-form-card">
+        <h3>Date & time</h3>
+        <div class="form-row" style="margin-bottom:1rem;">
+          <div class="form-group" style="margin-bottom:0"><label>Date</label><input type="date" id="booking-date" min=""/></div>
+          <div class="form-group" style="margin-bottom:0"><label>Neighborhood</label><input type="text" id="booking-area" placeholder="e.g. Sherman Oaks"/></div>
+        </div>
+        <label style="margin-bottom:.6rem">Preferred start time</label>
+        <div class="time-slots" id="time-slots-grid"></div>
+      </div>
+      <div class="booking-form-card">
+        <h3>Your details</h3>
+        <div class="form-row">
+          <div class="form-group"><label>First name</label><input type="text" id="f-fname" placeholder="Jane"/></div>
+          <div class="form-group"><label>Last name</label><input type="text" id="f-lname" placeholder="Smith"/></div>
+        </div>
+        <div class="form-group"><label>Email</label><input type="email" id="f-email" placeholder="jane@email.com"/></div>
+        <div class="form-group"><label>Phone</label><input type="tel" id="f-phone" placeholder="(310) 555-0100"/></div>
+        <div class="form-group"><label>Address</label><input type="text" id="f-address" placeholder="123 Main St, Los Angeles, CA"/></div>
+        <div class="form-group"><label>Notes (optional)</label><textarea id="f-notes" rows="2" placeholder="Gate code, pet names, special instructions…" style="resize:vertical"></textarea></div>
+        <div id="booking-error" style="color:var(--danger);font-size:13px;margin-bottom:.75rem;display:none"></div>
+        <button class="btn-primary" onclick="goToCheckout()">Continue to payment →</button>
+      </div>
+    </div>
+    <div>
+      <div class="summary-card">
+        <h3>Your booking</h3>
+        <div id="summary-cleaner" class="summary-row"><span>Cleaner</span><span style="color:var(--muted)">—</span></div>
+        <div id="summary-service" class="summary-row"><span>Service</span><span style="color:var(--muted)">—</span></div>
+        <div id="summary-size" class="summary-row"><span>Home size</span><span style="color:var(--muted)">—</span></div>
+        <div id="summary-date" class="summary-row"><span>Date</span><span style="color:var(--muted)">—</span></div>
+        <div id="summary-time" class="summary-row"><span>Time</span><span style="color:var(--muted)">—</span></div>
+        <div id="price-display" class="price-big">—</div>
+        <div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:1rem">Paid securely via Stripe before your clean</div>
+        <div style="display:flex;align-items:center;gap:6px;justify-content:center;font-size:12px;color:var(--muted)">🔒 SSL encrypted · No card stored</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SCREEN: CHECKOUT ═══════════════════ -->
+<div id="screen-checkout" class="screen">
+  <nav>
+    <div class="nav-brand" onclick="showScreen('home')">Squeaky <span>Queens</span></div>
+    <div class="nav-links"><button class="btn-ghost" onclick="showScreen('booking')">← Edit booking</button></div>
+  </nav>
+  <div class="checkout-layout">
+    <div>
+      <div class="booking-form-card" style="margin-bottom:1rem;">
+        <h3 style="font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:500;margin-bottom:1.25rem">Booking summary</h3>
+        <div id="checkout-summary"></div>
+      </div>
+      <div class="booking-form-card">
+        <h3 style="font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:500;margin-bottom:1.25rem">Promo code</h3>
+        <div style="display:flex;gap:.75rem;">
+          <input type="text" id="promo-input" placeholder="Enter code (try ROYAL20)" style="flex:1"/>
+          <button class="btn-ghost" onclick="applyPromo()" style="white-space:nowrap">Apply</button>
+        </div>
+        <div id="promo-msg" style="font-size:13px;margin-top:.5rem;"></div>
+      </div>
+    </div>
+    <div>
+      <div class="stripe-mock">
+        <div style="font-size:32px;margin-bottom:1rem">🔒</div>
+        <h3>Secure payment</h3>
+        <p>You'll be redirected to Stripe's secure checkout to complete payment.</p>
+        <div class="amount" id="checkout-total">$0</div>
+        <button class="btn-hero-primary" style="width:100%;font-size:15px;padding:14px" onclick="completePurchase()">Pay with Stripe →</button>
+        <p style="margin-top:1rem;font-size:11px;opacity:.6">Visa · Mastercard · Amex · Apple Pay · Google Pay</p>
+      </div>
+      <div style="margin-top:1rem;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1rem;font-size:13px;color:var(--muted)">
+        <strong style="color:var(--ink);display:block;margin-bottom:.4rem">Cancellation policy</strong>
+        Free cancellation up to 24 hours before your scheduled clean.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SCREEN: CONFIRM ═══════════════════ -->
+<div id="screen-confirm" class="screen">
+  <nav><div class="nav-brand" onclick="showScreen('home')">Squeaky <span>Queens</span></div></nav>
+  <div class="confirm-wrap">
+    <div class="confirm-icon">♛</div>
+    <h2>You're all set!</h2>
+    <p>Your booking is confirmed. We'll send a reminder 24 hours before your clean.</p>
+    <div class="confirm-details" id="confirm-details"></div>
+    <button class="btn-primary" style="margin-bottom:.75rem" onclick="showScreen('home')">Back to home</button>
+    <button class="btn-secondary" onclick="startBooking('any')">Book another clean</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ SCREEN: CLEANER SIGNUP ═══════════════════ -->
+<div id="screen-cleaner-signup" class="screen">
+  <nav>
+    <div class="nav-brand" onclick="showScreen('home')">Squeaky <span>Queens</span></div>
+    <div class="nav-links">
+      <a onclick="showScreen('cleaner-login')">Already a queen? Sign in</a>
+      <button class="btn-ghost" onclick="showScreen('home')">← Home</button>
+    </div>
+  </nav>
+  <div class="signup-header">
+    <h1>Join the Queens</h1>
+    <p>Apply to become a Squeaky Queens cleaner. We review every application personally.</p>
+  </div>
+  <div class="signup-wrap">
+    <div class="card" style="margin-bottom:1rem;">
+      <h3 style="font-size:1rem;margin-bottom:1.25rem">Your details</h3>
+      <div class="form-row">
+        <div class="form-group"><label>First name</label><input type="text" id="cs-fname" placeholder="Maria"/></div>
+        <div class="form-group"><label>Last name</label><input type="text" id="cs-lname" placeholder="Garcia"/></div>
+      </div>
+      <div class="form-group"><label>Email</label><input type="email" id="cs-email" placeholder="maria@email.com"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="cs-password" placeholder="Min. 8 characters"/></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="cs-phone" placeholder="(310) 555-0100"/></div>
+      <div class="form-group">
+        <label>Short bio</label>
+        <textarea id="cs-bio" rows="3" placeholder="Tell customers about yourself, your experience, and what makes you great…" style="resize:vertical"></textarea>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <h3 style="font-size:1rem;margin-bottom:1.25rem">Profile photo</h3>
+      <div class="photo-upload" onclick="document.getElementById('cs-photo-input').click()">
+        <img id="cs-photo-preview" src="" style="display:none;width:80px;height:80px;border-radius:50%;object-fit:cover;margin:0 auto .75rem;display:none;"/>
+        <div id="cs-photo-placeholder">
+          <div style="font-size:32px;margin-bottom:.5rem">📷</div>
+          <div style="font-size:14px;font-weight:500;margin-bottom:4px">Upload a photo</div>
+          <div style="font-size:12px;color:var(--muted)">JPG or PNG, max 5MB</div>
+        </div>
+      </div>
+      <input type="file" id="cs-photo-input" accept="image/*" style="display:none" onchange="previewPhoto(this)"/>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <h3 style="font-size:1rem;margin-bottom:1.25rem">Service areas</h3>
+      <div class="form-group">
+        <label>Areas you cover (separate with commas)</label>
+        <input type="text" id="cs-areas" placeholder="e.g. Sherman Oaks, Studio City, Burbank"/>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <h3 style="font-size:1rem;margin-bottom:1.25rem">Your availability</h3>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">Select the days you're generally available (you can update this anytime in your portal).</p>
+      <div class="day-grid">
+        <div class="day-opt" onclick="toggleDay(this,'monday')">Mon</div>
+        <div class="day-opt" onclick="toggleDay(this,'tuesday')">Tue</div>
+        <div class="day-opt" onclick="toggleDay(this,'wednesday')">Wed</div>
+        <div class="day-opt" onclick="toggleDay(this,'thursday')">Thu</div>
+        <div class="day-opt" onclick="toggleDay(this,'friday')">Fri</div>
+        <div class="day-opt" onclick="toggleDay(this,'saturday')">Sat</div>
+        <div class="day-opt" onclick="toggleDay(this,'sunday')">Sun</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Usually start</label>
+          <select id="cs-start-time">
+            <option>7:00 AM</option><option>8:00 AM</option><option selected>9:00 AM</option>
+            <option>10:00 AM</option><option>11:00 AM</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Usually finish</label>
+          <select id="cs-end-time">
+            <option>2:00 PM</option><option>3:00 PM</option><option>4:00 PM</option>
+            <option selected>5:00 PM</option><option>6:00 PM</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <h3 style="font-size:1rem;margin-bottom:.5rem">Your pricing tiers</h3>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem">Set your prices per service type. Minimum rates apply.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.5rem;margin-bottom:.5rem;">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Size</div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Standard</div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Deep</div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Move-in/out</div>
+      </div>
+      <div id="tier-rows"></div>
+    </div>
+
+    <div id="signup-error" style="color:var(--danger);font-size:13px;margin-bottom:.75rem;display:none"></div>
+    <button class="btn-primary" onclick="submitCleanerSignup()" style="margin-bottom:2rem">Submit application →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ SCREEN: CLEANER LOGIN ═══════════════════ -->
+<div id="screen-cleaner-login" class="screen">
+  <nav>
+    <div class="nav-brand" onclick="showScreen('home')">Squeaky <span>Queens</span></div>
+    <div class="nav-links"><button class="btn-ghost" onclick="showScreen('home')">← Home</button></div>
+  </nav>
+  <div class="login-wrap">
+    <div class="login-card">
+      <div style="font-size:32px;margin-bottom:.75rem">♛</div>
+      <h2>Queen sign in</h2>
+      <p>Log in to manage your profile, calendar and bookings.</p>
+      <div class="form-group"><label>Email</label><input type="email" id="cl-email" placeholder="you@email.com" onkeydown="if(event.key==='Enter')cleanerLogin()"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="cl-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')cleanerLogin()"/></div>
+      <div id="login-error" class="error-msg" style="display:none;margin-bottom:.75rem"></div>
+      <button class="btn-primary" onclick="cleanerLogin()">Sign in</button>
+      <p style="font-size:13px;color:var(--muted);margin-top:1.25rem">No account yet? <a onclick="showScreen('cleaner-signup')" style="color:var(--teal);cursor:pointer">Apply to join →</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SCREEN: CLEANER PORTAL ═══════════════════ -->
+<div id="screen-cleaner-portal" class="screen">
+  <nav>
+    <div class="nav-brand" onclick="showScreen('home')">Squeaky <span>Queens</span></div>
+    <div class="nav-links">
+      <span id="portal-cleaner-name" style="font-size:13px;color:var(--muted)"></span>
+      <button class="btn-ghost" onclick="cleanerLogout()">Sign out</button>
+    </div>
+  </nav>
+  <div class="portal-layout">
+    <div class="portal-sidebar">
+      <div style="padding:1rem 1.5rem;margin-bottom:.5rem;">
+        <div style="font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em">Queen portal</div>
+      </div>
+      <div class="nav-item active" onclick="switchPortalTab('profile',this)"><span class="nav-icon">👤</span> My profile</div>
+      <div class="nav-item" onclick="switchPortalTab('calendar',this)"><span class="nav-icon">📅</span> Calendar</div>
+      <div class="nav-item" onclick="switchPortalTab('tiers',this)"><span class="nav-icon">💰</span> My pricing</div>
+      <div class="nav-item" onclick="switchPortalTab('bookings',this)"><span class="nav-icon">📋</span> My bookings</div>
+    </div>
+    <div class="portal-content">
+      <!-- Profile tab -->
+      <div class="portal-section active" id="portal-profile">
+        <h2>My profile</h2>
+        <div class="card" style="margin-bottom:1rem;">
+          <div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:1.5rem;">
+            <div id="portal-photo-wrap">
+              <div class="cleaner-avatar av-default" id="portal-avatar-initials" style="margin-bottom:0;cursor:pointer" onclick="document.getElementById('portal-photo-input').click()">?</div>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:500;margin-bottom:4px" id="portal-status-badge"></div>
+              <button class="btn-ghost btn-sm" onclick="document.getElementById('portal-photo-input').click()">Change photo</button>
+              <input type="file" id="portal-photo-input" accept="image/*" style="display:none" onchange="uploadPortalPhoto(this)"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>First name</label><input type="text" id="portal-fname"/></div>
+            <div class="form-group"><label>Last name</label><input type="text" id="portal-lname"/></div>
+          </div>
+          <div class="form-group"><label>Phone</label><input type="text" id="portal-phone"/></div>
+          <div class="form-group">
+            <label>Service areas (comma separated)</label>
+            <input type="text" id="portal-areas" placeholder="Sherman Oaks, Studio City…"/>
+          </div>
+          <div class="form-group">
+            <label>Bio</label>
+            <textarea id="portal-bio" rows="4" style="resize:vertical"></textarea>
+          </div>
+          <button class="btn-primary btn-sm" style="width:auto;padding:10px 24px" onclick="saveProfile()">Save changes</button>
+        </div>
+      </div>
+
+      <!-- Calendar tab -->
+      <div class="portal-section" id="portal-calendar">
+        <h2>My calendar</h2>
+        <div class="card" style="margin-bottom:1rem;">
+          <h3 style="font-size:1rem;margin-bottom:1rem">Weekly availability</h3>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem">Set which days you're generally available each week.</p>
+          <div class="day-grid" id="portal-day-grid"></div>
+          <div class="form-row" style="margin-top:.75rem">
+            <div class="form-group"><label>Start time</label>
+              <select id="portal-start-time">
+                <option>7:00 AM</option><option>8:00 AM</option><option>9:00 AM</option><option>10:00 AM</option>
+              </select>
+            </div>
+            <div class="form-group"><label>End time</label>
+              <select id="portal-end-time">
+                <option>3:00 PM</option><option>4:00 PM</option><option>5:00 PM</option><option>6:00 PM</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-primary btn-sm" style="width:auto;padding:10px 24px" onclick="saveAvailability()">Save availability</button>
+        </div>
+        <div class="card">
+          <h3 style="font-size:1rem;margin-bottom:.5rem">Block specific dates</h3>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">Mark dates you're unavailable (vacations, personal days).</p>
+          <div style="display:flex;gap:.75rem;margin-bottom:1rem;">
+            <input type="date" id="block-date-input" style="flex:1"/>
+            <input type="text" id="block-date-reason" placeholder="Reason (optional)" style="flex:1"/>
+            <button class="btn-ghost" onclick="addBlockedDate()">Block</button>
+          </div>
+          <div id="blocked-dates-list"></div>
+        </div>
+      </div>
+
+      <!-- Tiers tab -->
+      <div class="portal-section" id="portal-tiers">
+        <h2>My pricing</h2>
+        <div class="card">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem">Set your prices per home size and service type. Platform minimums apply.</p>
+          <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:.5rem;margin-bottom:.75rem;padding:0 4px;">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Size</div>
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Standard $</div>
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Deep $</div>
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Move-in/out $</div>
+          </div>
+          <div id="portal-tier-rows"></div>
+          <button class="btn-primary btn-sm" style="width:auto;padding:10px 24px;margin-top:1rem" onclick="saveTiers()">Save pricing</button>
+        </div>
+      </div>
+
+      <!-- Bookings tab -->
+      <div class="portal-section" id="portal-bookings">
+        <h2>My bookings</h2>
+        <div class="data-table">
+          <table class="tbl">
+            <thead><tr><th>ID</th><th>Customer</th><th>Service</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody id="portal-bookings-tbody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SCREEN: ADMIN GATE ═══════════════════ -->
+<div id="screen-admin-gate" class="screen">
+  <nav>
+    <div class="nav-brand" onclick="showScreen('home')">Squeaky <span>Queens</span></div>
+    <div class="nav-links"><button class="btn-ghost" onclick="showScreen('home')">← Home</button></div>
+  </nav>
+  <div class="login-wrap">
+    <div class="login-card">
+      <div style="font-size:32px;margin-bottom:.75rem">♛</div>
+      <h2>Admin access</h2>
+      <p>Enter the admin password to manage bookings and cleaners.</p>
+      <div class="form-group"><label>Password</label><input type="password" id="admin-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkAdmin()"/></div>
+      <div id="admin-error" class="error-msg" style="display:none;margin-bottom:.75rem">Incorrect password</div>
+      <button class="btn-primary" onclick="checkAdmin()">Sign in</button>
+      <p style="font-size:12px;color:var(--muted);margin-top:1rem">Demo password: <strong>queens2024</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SCREEN: ADMIN DASHBOARD ═══════════════════ -->
+<div id="screen-admin" class="screen">
+  <div class="admin-header">
+    <h2>♛ Squeaky Queens — Admin</h2>
+    <div style="display:flex;gap:.75rem;align-items:center">
+      <span style="font-size:13px;opacity:.6" id="admin-date"></span>
+      <button class="btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="showScreen('home')">← Site</button>
+    </div>
+  </div>
+  <div class="admin-wrap">
+    <div class="metrics-grid" id="metrics-grid"></div>
+    <div class="admin-tabs">
+      <div class="admin-tab active" onclick="switchAdminTab('bookings',this)">Bookings</div>
+      <div class="admin-tab" onclick="switchAdminTab('pending',this)">Pending cleaners <span id="pending-count-badge"></span></div>
+      <div class="admin-tab" onclick="switchAdminTab('cleaners',this)">All cleaners</div>
+    </div>
+
+    <!-- Bookings panel -->
+    <div class="admin-panel active" id="admin-bookings">
+      <div class="data-table">
+        <div class="table-header">
+          <h3>All bookings</h3>
+          <div style="display:flex;gap:.5rem">
+            <select id="filter-cleaner" onchange="renderAdminBookings()" style="width:auto;font-size:13px;padding:6px 10px">
+              <option value="all">All queens</option>
+            </select>
+            <select id="filter-status" onchange="renderAdminBookings()" style="width:auto;font-size:13px;padding:6px 10px">
+              <option value="all">All statuses</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>#</th><th>Customer</th><th>Cleaner</th><th>Service</th><th>Date</th><th>Time</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody id="bookings-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending cleaners panel -->
+    <div class="admin-panel" id="admin-pending">
+      <div id="pending-list"><div style="color:var(--muted);padding:2rem;text-align:center">Loading…</div></div>
+    </div>
+
+    <!-- All cleaners panel -->
+    <div class="admin-panel" id="admin-cleaners">
+      <div class="data-table">
+        <div class="table-header"><h3>All cleaners</h3></div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>Name</th><th>Email</th><th>Areas</th><th>Applied</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="cleaners-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// SUPABASE INIT
+// ══════════════════════════════════════
+const SUPABASE_URL = 'https://hdjohnjwfkojlonlrcsu.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhkam9obmp3ZmtvamxvbmxyY3N1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTA5ODIsImV4cCI6MjA5NDkyNjk4Mn0.8wwGqxo87S-t276ccHlQJ6TzdrarhLbtiAkWXKj36sY';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+const booking = { cleanerId:'', cleanerName:'', cleanerTiers:null, service:'', serviceLabel:'', size:'', sizeLabel:'', price:0, date:'', time:'', fname:'', lname:'', email:'', phone:'', address:'', notes:'', discount:0 };
+const DEFAULT_PRICES = { standard:{studio:145,two:185,three:225,four:275}, deep:{studio:195,two:245,three:295,four:360}, moveinout:{studio:220,two:275,three:335,four:400} };
+const SIZES = [{key:'studio',label:'Studio / 1BR'},{key:'two',label:'2 Bedroom'},{key:'three',label:'3 Bedroom'},{key:'four',label:'4 Bedroom+'}];
+const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+const DAY_LABELS = {monday:'Mon',tuesday:'Tue',wednesday:'Wed',thursday:'Thu',friday:'Fri',saturday:'Sat',sunday:'Sun'};
+const TIME_SLOTS = ['8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM'];
+const FLOOR_PRICES = { standard:{studio:120,two:160,three:200,four:240}, deep:{studio:160,two:210,three:260,four:320}, moveinout:{studio:180,two:240,three:295,four:360} };
+
+let currentCleaner = null; // logged in cleaner data
+let selectedDays = [];
+let portalSelectedDays = [];
+let blockedDates = [];
+let allApprovedCleaners = [];
+
+// ══════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  window.scrollTo(0,0);
+}
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+function fmtDate(d) { return new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}); }
+function fmtDateLong(d) { return new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}); }
+function statusBadge(s) {
+  const map = {confirmed:'badge-green',pending:'badge-gold',cancelled:'badge-red',completed:'badge-teal',approved:'badge-green',rejected:'badge-red'};
+  return `<span class="badge ${map[s]||'badge-gray'}">${s}</span>`;
+}
+
+// ══════════════════════════════════════
+// LANDING — LOAD CLEANERS
+// ══════════════════════════════════════
+async function loadCleaners() {
+  const { data, error } = await sb.from('cleaners').select('*').eq('status','approved');
+  const grid = document.getElementById('cleaners-list');
+  if (error || !data || data.length === 0) {
+    // Fall back to hardcoded Riley & Consuela if no DB data yet
+    allApprovedCleaners = [
+      {id:'riley-default', first_name:'Riley', last_name:'', bio:'Fast, effective and detail-oriented. Your home will shine.', service_areas:['San Fernando Valley','Los Angeles'], photo_url:'', status:'approved'},
+      {id:'consuela-default', first_name:'Consuela', last_name:'', bio:'Deep clean specialist with 7 years experience in the South Bay.', service_areas:['Torrance','Redondo Beach','Manhattan Beach'], photo_url:'', status:'approved'}
+    ];
+  } else {
+    allApprovedCleaners = data;
+  }
+  renderCleanerCards();
+  populateCleanerPicker();
+}
+
+function renderCleanerCards() {
+  const grid = document.getElementById('cleaners-list');
+  grid.innerHTML = allApprovedCleaners.map(c => {
+    const initials = (c.first_name[0]||'') + (c.last_name?c.last_name[0]:'');
+    const photoHtml = c.photo_url
+      ? `<img src="${c.photo_url}" class="cleaner-avatar" style="object-fit:cover" alt="${c.first_name}"/>`
+      : `<div class="cleaner-avatar av-default">${initials}</div>`;
+    const areas = Array.isArray(c.service_areas) ? c.service_areas.join(' · ') : c.service_areas||'';
+    return `<div class="cleaner-card" onclick="startBooking('${c.id}')">
+      ${photoHtml}
+      <div class="cleaner-name">${c.first_name} ${c.last_name||''}</div>
+      <div class="cleaner-zone">📍 ${areas}</div>
+      <div class="stars">★★★★★ <span style="color:var(--muted);font-size:13px">New</span></div>
+      <div class="cleaner-tags"><span class="badge badge-teal">Vetted</span><span class="badge badge-gray">Background checked</span></div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem">${(c.bio||'').substring(0,100)}${(c.bio||'').length>100?'…':''}</p>
+      <button class="btn-primary" style="font-size:13px;padding:10px">Book ${c.first_name} →</button>
+    </div>`;
+  }).join('');
+}
+
+function populateCleanerPicker() {
+  const picker = document.getElementById('booking-cleaner-picker');
+  picker.innerHTML = `<div class="cleaner-opt ${booking.cleanerId==='' && booking.cleanerName==='' ? '' : ''}" id="opt-any" onclick="selectCleaner('any','any','Best match for my area')">
+    <div style="font-size:20px;margin-bottom:4px">✨</div>
+    <div class="opt-name">Best match</div>
+    <div class="opt-zone">Auto-assign</div>
+  </div>` + allApprovedCleaners.map(c =>
+    `<div class="cleaner-opt" id="opt-${c.id}" onclick="selectCleaner('${c.id}','${c.first_name}','${Array.isArray(c.service_areas)?c.service_areas[0]:c.service_areas||''}')">
+      <div style="font-size:20px;margin-bottom:4px">${c.first_name[0]}</div>
+      <div class="opt-name">${c.first_name}</div>
+      <div class="opt-zone">${Array.isArray(c.service_areas)?c.service_areas[0]:(c.service_areas||'')}</div>
+    </div>`
+  ).join('');
+}
+
+// ══════════════════════════════════════
+// BOOKING FLOW
+// ══════════════════════════════════════
+async function startBooking(cleanerId) {
+  if (cleanerId && cleanerId !== 'any') {
+    const found = allApprovedCleaners.find(c => c.id === cleanerId);
+    if (found) {
+      booking.cleanerId = found.id;
+      booking.cleanerName = found.first_name;
+      // Load tiers for this cleaner
+      const {data} = await sb.from('tiers').select('*').eq('cleaner_id', found.id);
+      booking.cleanerTiers = data && data.length ? data : null;
+    }
+  }
+  showScreen('booking');
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  document.getElementById('booking-date').min = tomorrow.toISOString().split('T')[0];
+  renderSizeOpts();
+  renderTimeSlotsGrid();
+  populateCleanerPicker();
+  if (booking.cleanerId) {
+    const el = document.getElementById('opt-' + booking.cleanerId);
+    if (el) el.classList.add('selected');
+  }
+  updateSummary();
+}
+
+async function selectCleaner(id, name, zone) {
+  booking.cleanerId = id; booking.cleanerName = name === 'any' ? 'Best match' : name;
+  document.querySelectorAll('.cleaner-opt').forEach(el => el.classList.remove('selected'));
+  document.getElementById('opt-' + id).classList.add('selected');
+  if (id !== 'any') {
+    const {data} = await sb.from('tiers').select('*').eq('cleaner_id', id);
+    booking.cleanerTiers = data && data.length ? data : null;
+  } else {
+    booking.cleanerTiers = null;
+  }
+  renderSizeOpts();
+  updateSummary();
+}
+
+function getPrice(sizeKey) {
+  if (booking.cleanerTiers && booking.service) {
+    const row = booking.cleanerTiers.find(t => t.size_key === sizeKey);
+    if (row) return row[booking.service] || null;
+  }
+  return booking.service ? DEFAULT_PRICES[booking.service]?.[sizeKey] : null;
+}
+
+function selectService(key, label) {
+  booking.service = key; booking.serviceLabel = label;
+  document.querySelectorAll('.service-opt').forEach(el => el.classList.remove('selected'));
+  document.getElementById('svc-' + key).classList.add('selected');
+  if (booking.size) booking.price = getPrice(booking.size) || 0;
+  renderSizeOpts(); updateSummary();
+}
+
+function renderSizeOpts() {
+  document.getElementById('size-opts').innerHTML = SIZES.map(s => {
+    const price = getPrice(s.key);
+    const sel = booking.size === s.key ? 'selected' : '';
+    return `<div class="size-opt ${sel}" onclick="selectSize('${s.key}','${s.label}')">
+      <div class="sz-name">${s.label}</div>
+      ${price ? `<div class="sz-price">$${price}</div>` : '<div class="sz-price" style="color:var(--muted)">Select service first</div>'}
+    </div>`;
+  }).join('');
+}
+
+function selectSize(key, label) {
+  booking.size = key; booking.sizeLabel = label;
+  booking.price = getPrice(key) || 0;
+  renderSizeOpts(); updateSummary();
+}
+
+async function renderTimeSlotsGrid() {
+  const grid = document.getElementById('time-slots-grid');
+  // Load blocked dates if a cleaner is selected
+  let blocked = [];
+  if (booking.cleanerId && booking.cleanerId !== 'any' && booking.date) {
+    const {data} = await sb.from('blocked_dates').select('*').eq('cleaner_id', booking.cleanerId).eq('blocked_date', booking.date);
+    if (data && data.length) blocked = TIME_SLOTS; // whole day blocked
+  }
+  grid.innerHTML = TIME_SLOTS.map(t => {
+    const isBlocked = blocked.includes(t);
+    const sel = booking.time === t ? 'selected' : '';
+    return `<div class="time-slot ${sel} ${isBlocked?'blocked':''}" onclick="${isBlocked?'':` selectTime('${t}')`}">${t}</div>`;
+  }).join('');
+}
+
+function selectTime(t) {
+  booking.time = t;
+  document.querySelectorAll('.time-slot').forEach(el => el.classList.toggle('selected', el.textContent===t));
+  updateSummary();
+}
+
+document.addEventListener('change', function(e) {
+  if (e.target.id==='booking-date') { booking.date=e.target.value; updateSummary(); renderTimeSlotsGrid(); }
+});
+
+function updateSummary() {
+  const fmt = v => v || '<span style="color:var(--muted)">—</span>';
+  document.getElementById('summary-cleaner').innerHTML = `<span>Cleaner</span><span>${fmt(booking.cleanerName)}</span>`;
+  document.getElementById('summary-service').innerHTML = `<span>Service</span><span>${fmt(booking.serviceLabel)}</span>`;
+  document.getElementById('summary-size').innerHTML = `<span>Home size</span><span>${fmt(booking.sizeLabel)}</span>`;
+  document.getElementById('summary-date').innerHTML = `<span>Date</span><span>${fmt(booking.date ? fmtDate(booking.date) : '')}</span>`;
+  document.getElementById('summary-time').innerHTML = `<span>Time</span><span>${fmt(booking.time)}</span>`;
+  document.getElementById('price-display').textContent = booking.price ? '$'+booking.price : '—';
+}
+
+function showBookingError(msg) {
+  const e = document.getElementById('booking-error');
+  e.textContent = msg; e.style.display = 'block';
+  e.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function goToCheckout() {
+  booking.fname = document.getElementById('f-fname').value.trim();
+  booking.lname = document.getElementById('f-lname').value.trim();
+  booking.email = document.getElementById('f-email').value.trim();
+  booking.phone = document.getElementById('f-phone').value.trim();
+  booking.address = document.getElementById('f-address').value.trim();
+  booking.notes = document.getElementById('f-notes').value.trim();
+  if (!booking.cleanerId) return showBookingError('Please select a cleaner.');
+  if (!booking.service) return showBookingError('Please select a service type.');
+  if (!booking.size) return showBookingError('Please select your home size.');
+  if (!booking.date) return showBookingError('Please select a date.');
+  if (!booking.time) return showBookingError('Please select a time slot.');
+  if (!booking.fname || !booking.lname) return showBookingError('Please enter your name.');
+  if (!booking.email || !booking.email.includes('@')) return showBookingError('Please enter a valid email.');
+  if (!booking.address) return showBookingError('Please enter your address.');
+  document.getElementById('booking-error').style.display = 'none';
+  booking.discount = 0;
+  document.getElementById('promo-input').value = '';
+  document.getElementById('promo-msg').textContent = '';
+  renderCheckout();
+  showScreen('checkout');
+}
+
+function renderCheckout() {
+  const total = booking.price - booking.discount;
+  document.getElementById('checkout-summary').innerHTML = `
+    <div class="summary-row"><span>Customer</span><span>${booking.fname} ${booking.lname}</span></div>
+    <div class="summary-row"><span>Email</span><span style="color:var(--muted)">${booking.email}</span></div>
+    <div class="summary-row"><span>Address</span><span style="text-align:right;max-width:200px">${booking.address}</span></div>
+    <div class="summary-row"><span>Cleaner</span><span>${booking.cleanerName}</span></div>
+    <div class="summary-row"><span>Service</span><span>${booking.serviceLabel}</span></div>
+    <div class="summary-row"><span>Home size</span><span>${booking.sizeLabel}</span></div>
+    <div class="summary-row"><span>Date</span><span>${fmtDateLong(booking.date)}</span></div>
+    <div class="summary-row"><span>Time</span><span>${booking.time}</span></div>
+    ${booking.discount>0?`<div class="summary-row" style="color:var(--teal)"><span>Promo (ROYAL20)</span><span>-$${booking.discount}</span></div>`:''}
+    <div class="summary-row total"><span>Total due</span><span>$${total}</span></div>`;
+  document.getElementById('checkout-total').textContent = '$' + total;
+}
+
+function applyPromo() {
+  const code = document.getElementById('promo-input').value.trim().toUpperCase();
+  const msg = document.getElementById('promo-msg');
+  if (code === 'ROYAL20') {
+    booking.discount = Math.round(booking.price * 0.2);
+    msg.style.color = 'var(--teal)';
+    msg.textContent = `✓ 20% discount applied — you save $${booking.discount}!`;
+  } else { booking.discount = 0; msg.style.color='var(--danger)'; msg.textContent='Invalid promo code.'; }
+  renderCheckout();
+}
+
+async function completePurchase() {
+  const id = 'BK' + String(Date.now()).slice(-6);
+  const cleanerId = booking.cleanerId === 'any' ? null : booking.cleanerId;
+  const newBooking = {
+    id, cleaner_id: cleanerId, cleaner_name: booking.cleanerName,
+    customer_fname: booking.fname, customer_lname: booking.lname,
+    customer_email: booking.email, customer_phone: booking.phone,
+    customer_address: booking.address, service_type: booking.serviceLabel,
+    size_key: booking.size, size_label: booking.sizeLabel,
+    amount: booking.price - booking.discount,
+    booking_date: booking.date, booking_time: booking.time,
+    notes: booking.notes, status: 'confirmed'
+  };
+  const {error} = await sb.from('bookings').insert(newBooking);
+  if (error) {
+    // Fallback: save to localStorage
+    const all = JSON.parse(localStorage.getItem('sq_bookings')||'[]');
+    all.unshift({...newBooking, fname:booking.fname, lname:booking.lname, date:booking.date, time:booking.time, address:booking.address});
+    localStorage.setItem('sq_bookings', JSON.stringify(all));
+  }
+  renderConfirm(newBooking);
+  showScreen('confirm');
+}
+
+function renderConfirm(b) {
+  document.getElementById('confirm-details').innerHTML = `
+    <div class="confirm-row"><span>Booking ID</span><span>${b.id}</span></div>
+    <div class="confirm-row"><span>Cleaner</span><span>${b.cleaner_name}</span></div>
+    <div class="confirm-row"><span>Service</span><span>${b.service_type}</span></div>
+    <div class="confirm-row"><span>Home size</span><span>${b.size_label}</span></div>
+    <div class="confirm-row"><span>Date</span><span>${fmtDateLong(b.booking_date)}</span></div>
+    <div class="confirm-row"><span>Time</span><span>${b.booking_time}</span></div>
+    <div class="confirm-row"><span>Address</span><span>${b.customer_address}</span></div>
+    <div class="confirm-row"><span>Total paid</span><span style="color:var(--teal);font-weight:700">$${b.amount}</span></div>`;
+}
+
+// ══════════════════════════════════════
+// CLEANER SIGNUP
+// ══════════════════════════════════════
+function initTierRows(containerId, floors) {
+  document.getElementById(containerId).innerHTML = SIZES.map(s => {
+    const f = floors || FLOOR_PRICES;
+    return `<div class="tier-row" data-size="${s.key}">
+      <div class="tier-label">${s.label}</div>
+      <input type="number" class="tier-standard" value="${DEFAULT_PRICES.standard[s.key]}" min="${f.standard[s.key]}" placeholder="$${f.standard[s.key]}+"/>
+      <input type="number" class="tier-deep" value="${DEFAULT_PRICES.deep[s.key]}" min="${f.deep[s.key]}" placeholder="$${f.deep[s.key]}+"/>
+      <input type="number" class="tier-moveinout" value="${DEFAULT_PRICES.moveinout[s.key]}" min="${f.moveinout[s.key]}" placeholder="$${f.moveinout[s.key]}+"/>
+    </div>`;
+  }).join('');
+}
+
+function toggleDay(el, day) {
+  el.classList.toggle('selected');
+  if (el.classList.contains('selected')) { if(!selectedDays.includes(day)) selectedDays.push(day); }
+  else { selectedDays = selectedDays.filter(d=>d!==day); }
+}
+
+function previewPhoto(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById('cs-photo-preview');
+    img.src = e.target.result; img.style.display = 'block';
+    document.getElementById('cs-photo-placeholder').style.display = 'none';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+async function submitCleanerSignup() {
+  const fname = document.getElementById('cs-fname').value.trim();
+  const lname = document.getElementById('cs-lname').value.trim();
+  const email = document.getElementById('cs-email').value.trim();
+  const password = document.getElementById('cs-password').value;
+  const phone = document.getElementById('cs-phone').value.trim();
+  const bio = document.getElementById('cs-bio').value.trim();
+  const areas = document.getElementById('cs-areas').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const errEl = document.getElementById('signup-error');
+
+  if (!fname||!lname) return showSignupError('Please enter your name.');
+  if (!email||!email.includes('@')) return showSignupError('Please enter a valid email.');
+  if (password.length < 8) return showSignupError('Password must be at least 8 characters.');
+  if (areas.length === 0) return showSignupError('Please enter at least one service area.');
+  if (selectedDays.length === 0) return showSignupError('Please select at least one availability day.');
+
+  errEl.style.display = 'none';
+  const btn = document.querySelector('#screen-cleaner-signup .btn-primary');
+  btn.textContent = 'Submitting…'; btn.disabled = true;
+
+  // 1. Create auth user
+  const {data: authData, error: authError} = await sb.auth.signUp({email, password});
+  if (authError) { btn.textContent='Submit application →'; btn.disabled=false; return showSignupError(authError.message); }
+
+  const userId = authData.user?.id;
+
+  // 2. Upload photo if provided
+  let photoUrl = '';
+  const photoInput = document.getElementById('cs-photo-input');
+  if (photoInput.files && photoInput.files[0] && userId) {
+    const file = photoInput.files[0];
+    const ext = file.name.split('.').pop();
+    const {data: uploadData, error: uploadError} = await sb.storage.from('cleaner-photos').upload(`${userId}/profile.${ext}`, file, {upsert:true});
+    if (!uploadError) {
+      const {data: urlData} = sb.storage.from('cleaner-photos').getPublicUrl(`${userId}/profile.${ext}`);
+      photoUrl = urlData?.publicUrl || '';
+    }
+  }
+
+  // 3. Insert cleaner record
+  const {data: cleanerData, error: cleanerError} = await sb.from('cleaners').insert({
+    user_id: userId, first_name: fname, last_name: lname,
+    email, phone, bio, photo_url: photoUrl,
+    service_areas: areas, status: 'pending'
+  }).select().single();
+
+  if (cleanerError) { btn.textContent='Submit application →'; btn.disabled=false; return showSignupError(cleanerError.message); }
+
+  const cleanerId = cleanerData.id;
+
+  // 4. Save tiers
+  const tierRows = document.querySelectorAll('#tier-rows .tier-row');
+  const tiers = Array.from(tierRows).map(row => ({
+    cleaner_id: cleanerId,
+    size_key: row.dataset.size,
+    size_label: SIZES.find(s=>s.key===row.dataset.size)?.label,
+    standard: parseInt(row.querySelector('.tier-standard').value)||DEFAULT_PRICES.standard[row.dataset.size],
+    deep: parseInt(row.querySelector('.tier-deep').value)||DEFAULT_PRICES.deep[row.dataset.size],
+    moveinout: parseInt(row.querySelector('.tier-moveinout').value)||DEFAULT_PRICES.moveinout[row.dataset.size]
+  }));
+  await sb.from('tiers').insert(tiers);
+
+  // 5. Save availability
+  const startTime = document.getElementById('cs-start-time').value;
+  const endTime = document.getElementById('cs-end-time').value;
+  const avail = selectedDays.map(day => ({ cleaner_id: cleanerId, day_of_week: day, start_time: startTime, end_time: endTime, is_available: true }));
+  if (avail.length) await sb.from('availability').insert(avail);
+
+  toast('Application submitted! We\'ll review it and be in touch.', 'success');
+  btn.textContent = 'Submit application →'; btn.disabled = false;
+
+  // Show success screen
+  document.getElementById('screen-cleaner-signup').innerHTML = `
+    <nav><div class="nav-brand" onclick="showScreen('home')">Squeaky <span>Queens</span></div></nav>
+    <div class="confirm-wrap">
+      <div class="confirm-icon">♛</div>
+      <h2>Application submitted!</h2>
+      <p>Thanks ${fname}! We'll review your application and get back to you within 1-2 business days.</p>
+      <button class="btn-primary" onclick="showScreen('home')">Back to home</button>
+    </div>`;
+}
+
+function showSignupError(msg) {
+  const e = document.getElementById('signup-error');
+  e.textContent = msg; e.style.display = 'block';
+  e.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+// ══════════════════════════════════════
+// CLEANER LOGIN / PORTAL
+// ══════════════════════════════════════
+async function cleanerLogin() {
+  const email = document.getElementById('cl-email').value.trim();
+  const password = document.getElementById('cl-password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+
+  const {data, error} = await sb.auth.signInWithPassword({email, password});
+  if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+
+  // Fetch cleaner profile
+  const {data: cleanerData, error: ce} = await sb.from('cleaners').select('*').eq('user_id', data.user.id).single();
+  if (ce || !cleanerData) { errEl.textContent = 'No cleaner profile found for this account.'; errEl.style.display='block'; await sb.auth.signOut(); return; }
+
+  currentCleaner = cleanerData;
+  await loadPortal();
+  showScreen('cleaner-portal');
+}
+
+async function loadPortal() {
+  if (!currentCleaner) return;
+  document.getElementById('portal-cleaner-name').textContent = currentCleaner.first_name + ' ' + (currentCleaner.last_name||'');
+
+  // Status badge
+  const statusMap = {pending:'badge-orange',approved:'badge-green',rejected:'badge-red'};
+  document.getElementById('portal-status-badge').innerHTML = `<span class="badge ${statusMap[currentCleaner.status]||'badge-gray'}">${currentCleaner.status}</span>`;
+  if (currentCleaner.status === 'pending') {
+    document.getElementById('portal-status-badge').innerHTML += ' <span style="font-size:13px;color:var(--muted)">— your application is under review</span>';
+  }
+
+  // Avatar
+  const initials = (currentCleaner.first_name[0]||'') + (currentCleaner.last_name?currentCleaner.last_name[0]:'');
+  if (currentCleaner.photo_url) {
+    document.getElementById('portal-avatar-initials').innerHTML = `<img src="${currentCleaner.photo_url}" style="width:72px;height:72px;border-radius:50%;object-fit:cover"/>`;
+  } else {
+    document.getElementById('portal-avatar-initials').textContent = initials;
+  }
+
+  // Profile fields
+  document.getElementById('portal-fname').value = currentCleaner.first_name||'';
+  document.getElementById('portal-lname').value = currentCleaner.last_name||'';
+  document.getElementById('portal-phone').value = currentCleaner.phone||'';
+  document.getElementById('portal-bio').value = currentCleaner.bio||'';
+  document.getElementById('portal-areas').value = Array.isArray(currentCleaner.service_areas) ? currentCleaner.service_areas.join(', ') : (currentCleaner.service_areas||'');
+
+  // Availability
+  const {data: availData} = await sb.from('availability').select('*').eq('cleaner_id', currentCleaner.id);
+  portalSelectedDays = availData ? availData.filter(a=>a.is_available).map(a=>a.day_of_week) : [];
+  renderPortalDayGrid();
+  if (availData && availData[0]) {
+    document.getElementById('portal-start-time').value = availData[0].start_time||'9:00 AM';
+    document.getElementById('portal-end-time').value = availData[0].end_time||'5:00 PM';
+  }
+
+  // Blocked dates
+  const {data: bdData} = await sb.from('blocked_dates').select('*').eq('cleaner_id', currentCleaner.id).order('blocked_date');
+  blockedDates = bdData || [];
+  renderBlockedDates();
+
+  // Tiers
+  const {data: tierData} = await sb.from('tiers').select('*').eq('cleaner_id', currentCleaner.id);
+  initPortalTierRows(tierData);
+
+  // Bookings
+  const {data: bookData} = await sb.from('bookings').select('*').eq('cleaner_id', currentCleaner.id).order('booking_date', {ascending:false});
+  const tbody = document.getElementById('portal-bookings-tbody');
+  if (!bookData || bookData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">No bookings yet</td></tr>';
+  } else {
+    tbody.innerHTML = bookData.map(b => `<tr>
+      <td style="font-weight:500;color:var(--teal)">${b.id}</td>
+      <td>${b.customer_fname} ${b.customer_lname}</td>
+      <td>${b.service_type}<br><span style="font-size:12px;color:var(--muted)">${b.size_label}</span></td>
+      <td>${fmtDate(b.booking_date)}<br><span style="font-size:12px;color:var(--muted)">${b.booking_time}</span></td>
+      <td style="font-weight:500;color:var(--teal)">$${b.amount}</td>
+      <td>${statusBadge(b.status)}</td>
+    </tr>`).join('');
+  }
+}
+
+function renderPortalDayGrid() {
+  document.getElementById('portal-day-grid').innerHTML = DAYS.map(d => {
+    const sel = portalSelectedDays.includes(d) ? 'selected' : '';
+    return `<div class="day-opt ${sel}" onclick="togglePortalDay(this,'${d}')">${DAY_LABELS[d]}</div>`;
+  }).join('');
+}
+
+function togglePortalDay(el, day) {
+  el.classList.toggle('selected');
+  if (el.classList.contains('selected')) { if(!portalSelectedDays.includes(day)) portalSelectedDays.push(day); }
+  else { portalSelectedDays = portalSelectedDays.filter(d=>d!==day); }
+}
+
+function initPortalTierRows(existingTiers) {
+  document.getElementById('portal-tier-rows').innerHTML = SIZES.map(s => {
+    const existing = existingTiers ? existingTiers.find(t=>t.size_key===s.key) : null;
+    return `<div class="tier-row" data-size="${s.key}">
+      <div class="tier-label">${s.label}</div>
+      <input type="number" class="tier-standard" value="${existing?.standard||DEFAULT_PRICES.standard[s.key]}" min="${FLOOR_PRICES.standard[s.key]}"/>
+      <input type="number" class="tier-deep" value="${existing?.deep||DEFAULT_PRICES.deep[s.key]}" min="${FLOOR_PRICES.deep[s.key]}"/>
+      <input type="number" class="tier-moveinout" value="${existing?.moveinout||DEFAULT_PRICES.moveinout[s.key]}" min="${FLOOR_PRICES.moveinout[s.key]}"/>
+    </div>`;
+  }).join('');
+}
+
+async function saveProfile() {
+  const updates = {
+    first_name: document.getElementById('portal-fname').value.trim(),
+    last_name: document.getElementById('portal-lname').value.trim(),
+    phone: document.getElementById('portal-phone').value.trim(),
+    bio: document.getElementById('portal-bio').value.trim(),
+    service_areas: document.getElementById('portal-areas').value.split(',').map(s=>s.trim()).filter(Boolean),
+    updated_at: new Date().toISOString()
+  };
+  const {error} = await sb.from('cleaners').update(updates).eq('id', currentCleaner.id);
+  if (error) { toast('Error saving profile: '+error.message, 'error'); return; }
+  Object.assign(currentCleaner, updates);
+  toast('Profile saved!');
+}
+
+async function uploadPortalPhoto(input) {
+  if (!input.files || !input.files[0] || !currentCleaner) return;
+  const file = input.files[0];
+  const ext = file.name.split('.').pop();
+  const path = `${currentCleaner.user_id}/profile.${ext}`;
+  const {error: uploadError} = await sb.storage.from('cleaner-photos').upload(path, file, {upsert:true});
+  if (uploadError) { toast('Photo upload failed: '+uploadError.message, 'error'); return; }
+  const {data: urlData} = sb.storage.from('cleaner-photos').getPublicUrl(path);
+  const photoUrl = urlData?.publicUrl;
+  await sb.from('cleaners').update({photo_url: photoUrl}).eq('id', currentCleaner.id);
+  currentCleaner.photo_url = photoUrl;
+  document.getElementById('portal-avatar-initials').innerHTML = `<img src="${photoUrl}" style="width:72px;height:72px;border-radius:50%;object-fit:cover"/>`;
+  toast('Photo updated!');
+}
+
+async function saveAvailability() {
+  const startTime = document.getElementById('portal-start-time').value;
+  const endTime = document.getElementById('portal-end-time').value;
+  // Delete existing and reinsert
+  await sb.from('availability').delete().eq('cleaner_id', currentCleaner.id);
+  if (portalSelectedDays.length > 0) {
+    const rows = portalSelectedDays.map(day => ({ cleaner_id: currentCleaner.id, day_of_week: day, start_time: startTime, end_time: endTime, is_available: true }));
+    const {error} = await sb.from('availability').insert(rows);
+    if (error) { toast('Error saving: '+error.message, 'error'); return; }
+  }
+  toast('Availability saved!');
+}
+
+async function addBlockedDate() {
+  const date = document.getElementById('block-date-input').value;
+  const reason = document.getElementById('block-date-reason').value.trim();
+  if (!date) { toast('Please select a date to block', 'error'); return; }
+  const {error} = await sb.from('blocked_dates').insert({cleaner_id: currentCleaner.id, blocked_date: date, reason});
+  if (error) { toast('Error: '+error.message, 'error'); return; }
+  blockedDates.push({blocked_date: date, reason});
+  blockedDates.sort((a,b)=>a.blocked_date.localeCompare(b.blocked_date));
+  renderBlockedDates();
+  document.getElementById('block-date-input').value = '';
+  document.getElementById('block-date-reason').value = '';
+  toast('Date blocked!');
+}
+
+function renderBlockedDates() {
+  const container = document.getElementById('blocked-dates-list');
+  if (!blockedDates.length) { container.innerHTML = '<p style="font-size:13px;color:var(--muted)">No blocked dates.</p>'; return; }
+  container.innerHTML = blockedDates.map(b => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--border);font-size:14px;">
+      <div>
+        <span style="font-weight:500">${fmtDate(b.blocked_date)}</span>
+        ${b.reason?`<span style="color:var(--muted);font-size:12px;margin-left:.5rem">— ${b.reason}</span>`:''}
+      </div>
+      <button class="btn-ghost" style="font-size:12px;padding:4px 10px;color:var(--danger);border-color:var(--danger)" onclick="removeBlockedDate('${b.blocked_date}')">Remove</button>
+    </div>`).join('');
+}
+
+async function removeBlockedDate(date) {
+  await sb.from('blocked_dates').delete().eq('cleaner_id', currentCleaner.id).eq('blocked_date', date);
+  blockedDates = blockedDates.filter(b => b.blocked_date !== date);
+  renderBlockedDates();
+  toast('Date unblocked!');
+}
+
+async function saveTiers() {
+  const rows = document.querySelectorAll('#portal-tier-rows .tier-row');
+  // Validate floor prices
+  for (const row of rows) {
+    const sizeKey = row.dataset.size;
+    const std = parseInt(row.querySelector('.tier-standard').value);
+    const deep = parseInt(row.querySelector('.tier-deep').value);
+    const mio = parseInt(row.querySelector('.tier-moveinout').value);
+    if (std < FLOOR_PRICES.standard[sizeKey] || deep < FLOOR_PRICES.deep[sizeKey] || mio < FLOOR_PRICES.moveinout[sizeKey]) {
+      toast('Prices cannot be below the platform minimums.', 'error'); return;
+    }
+  }
+  await sb.from('tiers').delete().eq('cleaner_id', currentCleaner.id);
+  const tiers = Array.from(rows).map(row => ({
+    cleaner_id: currentCleaner.id,
+    size_key: row.dataset.size,
+    size_label: SIZES.find(s=>s.key===row.dataset.size)?.label,
+    standard: parseInt(row.querySelector('.tier-standard').value),
+    deep: parseInt(row.querySelector('.tier-deep').value),
+    moveinout: parseInt(row.querySelector('.tier-moveinout').value)
+  }));
+  const {error} = await sb.from('tiers').insert(tiers);
+  if (error) { toast('Error: '+error.message, 'error'); return; }
+  toast('Pricing saved!');
+}
+
+function switchPortalTab(tab, el) {
+  document.querySelectorAll('.portal-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.portal-sidebar .nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('portal-'+tab).classList.add('active');
+  el.classList.add('active');
+}
+
+async function cleanerLogout() {
+  await sb.auth.signOut();
+  currentCleaner = null;
+  showScreen('home');
+}
+
+// ══════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════
+function checkAdmin() {
+  const pw = document.getElementById('admin-pw').value;
+  if (pw === 'queens2024') {
+    document.getElementById('admin-error').style.display = 'none';
+    document.getElementById('admin-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+    renderAdminBookings();
+    renderAdminCleaners();
+    showScreen('admin');
+  } else {
+    document.getElementById('admin-error').style.display = 'block';
+  }
+}
+
+async function renderAdminBookings() {
+  let query = sb.from('bookings').select('*').order('booking_date',{ascending:false});
+  const cf = document.getElementById('filter-cleaner')?.value;
+  const sf = document.getElementById('filter-status')?.value;
+  if (cf && cf !== 'all') query = query.eq('cleaner_name', cf);
+  if (sf && sf !== 'all') query = query.eq('status', sf);
+  const {data: bookings} = await query;
+
+  // Also get local storage fallback
+  const local = JSON.parse(localStorage.getItem('sq_bookings')||'[]');
+  const all = [...(bookings||[]), ...local.filter(l => !(bookings||[]).find(b=>b.id===l.id))];
+
+  // Metrics
+  const total = all.reduce((s,b)=>s+(b.amount||0),0);
+  document.getElementById('metrics-grid').innerHTML = `
+    <div class="metric-card"><div class="metric-label">Total bookings</div><div class="metric-val">${all.length}</div></div>
+    <div class="metric-card"><div class="metric-label">Revenue</div><div class="metric-val">$${total.toLocaleString()}</div></div>
+    <div class="metric-card"><div class="metric-label">This week</div><div class="metric-val">${all.filter(b=>{const d=new Date(b.booking_date||b.date);const now=new Date();return d>=now&&d<=new Date(now.getTime()+7*24*60*60*1000);}).length}</div></div>
+    <div class="metric-card"><div class="metric-label">Avg booking</div><div class="metric-val">${all.length?'$'+Math.round(total/all.length):'-'}</div></div>`;
+
+  const tbody = document.getElementById('bookings-tbody');
+  if (!all.length) { tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">No bookings yet</td></tr>'; return; }
+  tbody.innerHTML = all.map(b => `<tr>
+    <td style="font-weight:500;color:var(--teal)">${b.id}</td>
+    <td><div style="font-weight:500">${b.customer_fname||b.fname} ${b.customer_lname||b.lname}</div><div style="font-size:12px;color:var(--muted)">${b.customer_email||b.email}</div></td>
+    <td>${b.cleaner_name||b.cleaner||'—'}</td>
+    <td><div>${b.service_type||b.service}</div><div style="font-size:12px;color:var(--muted)">${b.size_label||b.size}</div></td>
+    <td>${fmtDate(b.booking_date||b.date)}</td>
+    <td>${b.booking_time||b.time}</td>
+    <td style="font-weight:500;color:var(--teal)">$${b.amount}</td>
+    <td>${statusBadge(b.status)}</td>
+  </tr>`).join('');
+}
+
+async function renderAdminCleaners() {
+  const {data: cleaners} = await sb.from('cleaners').select('*').order('created_at',{ascending:false});
+  if (!cleaners) return;
+
+  const pending = cleaners.filter(c=>c.status==='pending');
+  const badge = document.getElementById('pending-count-badge');
+  if (pending.length) badge.innerHTML = `<span class="badge badge-gold" style="margin-left:6px">${pending.length}</span>`;
+
+  // Pending list
+  document.getElementById('pending-list').innerHTML = pending.length === 0
+    ? '<div style="color:var(--muted);padding:2rem;text-align:center">No pending applications.</div>'
+    : pending.map(c => `
+      <div class="pending-card">
+        <div class="pending-info">
+          <h4>${c.first_name} ${c.last_name||''}</h4>
+          <p>${c.email} · ${c.phone||'no phone'}</p>
+          <p style="margin-top:4px">${Array.isArray(c.service_areas)?c.service_areas.join(', '):(c.service_areas||'')}</p>
+          ${c.bio?`<p style="margin-top:6px;font-style:italic;color:var(--muted)">"${c.bio.substring(0,120)}…"</p>`:''}
+        </div>
+        <div class="pending-actions">
+          <button class="btn-primary btn-sm" onclick="approveRejectCleaner('${c.id}','approved')">✓ Approve</button>
+          <button class="btn-danger btn-sm" onclick="approveRejectCleaner('${c.id}','rejected')">✗ Reject</button>
+        </div>
+      </div>`).join('');
+
+  // Populate cleaner filter
+  const filterSel = document.getElementById('filter-cleaner');
+  if (filterSel) {
+    const approved = cleaners.filter(c=>c.status==='approved');
+    filterSel.innerHTML = '<option value="all">All queens</option>' + approved.map(c=>`<option value="${c.first_name}">${c.first_name} ${c.last_name||''}</option>`).join('');
+  }
+
+  // All cleaners table
+  document.getElementById('cleaners-tbody').innerHTML = cleaners.map(c => `<tr>
+    <td><div style="font-weight:500">${c.first_name} ${c.last_name||''}</div></td>
+    <td style="font-size:13px;color:var(--muted)">${c.email}</td>
+    <td style="font-size:13px">${Array.isArray(c.service_areas)?c.service_areas.join(', '):(c.service_areas||'—')}</td>
+    <td style="font-size:13px;color:var(--muted)">${new Date(c.created_at).toLocaleDateString()}</td>
+    <td>${statusBadge(c.status)}</td>
+    <td>
+      ${c.status!=='approved'?`<button class="btn-ghost btn-sm" style="margin-right:4px" onclick="approveRejectCleaner('${c.id}','approved')">Approve</button>`:''}
+      ${c.status!=='rejected'?`<button class="btn-ghost btn-sm" style="color:var(--danger);border-color:var(--danger)" onclick="approveRejectCleaner('${c.id}','rejected')">Reject</button>`:''}
+    </td>
+  </tr>`).join('');
+}
+
+async function approveRejectCleaner(id, status) {
+  const {error} = await sb.from('cleaners').update({status}).eq('id', id);
+  if (error) { toast('Error: '+error.message, 'error'); return; }
+  toast(status==='approved' ? '✓ Cleaner approved and now live on the site!' : 'Cleaner rejected.', status==='approved'?'success':'error');
+  renderAdminCleaners();
+  loadCleaners(); // refresh homepage
+}
+
+function switchAdminTab(tab, el) {
+  document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('admin-'+tab).classList.add('active');
+  el.classList.add('active');
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+initTierRows('tier-rows');
+loadCleaners();
+
+// Check if returning cleaner is still logged in
+sb.auth.getSession().then(({data}) => {
+  if (data?.session) {
+    sb.from('cleaners').select('*').eq('user_id', data.session.user.id).single().then(({data: cd}) => {
+      if (cd) { currentCleaner = cd; }
+    });
+  }
+});
+</script>
+</body>
+</html>
