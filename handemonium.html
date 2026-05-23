@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Handemonium — Order from chaos.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --navy:#1a2744;--navy-lt:#e8ecf5;--navy-md:#2a3d6e;
+    --red:#c0392b;--red-lt:#fdecea;--red-md:#e74c3c;
+    --cream:#f8f9fc;--ink:#0f1a30;--muted:#6b7a9a;
+    --border:#d0d8ec;--white:#ffffff;--danger:#c0392b;--radius:12px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);font-size:15px;line-height:1.6;}
+  h1,h2,h3{font-family:'Playfair Display',serif;line-height:1.2;}
+  .screen{display:none;min-height:100vh;}.screen.active{display:block;}
+
+  /* NAV */
+  nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .nav-brand{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--navy);cursor:pointer;}
+  .nav-brand span{color:var(--red);}
+  .nav-links{display:flex;gap:1rem;align-items:center;}
+  .nav-links a{font-size:13px;color:var(--muted);text-decoration:none;cursor:pointer;}
+  .nav-links a:hover{color:var(--navy);}
+  .btn-nav{background:var(--navy);color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;}
+  .btn-nav:hover{background:var(--navy-md);}
+
+  /* BUTTONS */
+  .btn-primary{background:var(--navy);color:#fff;border:none;padding:14px 28px;border-radius:var(--radius);font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;width:100%;transition:background .15s;}
+  .btn-primary:hover{background:var(--navy-md);}
+  .btn-primary:disabled{background:#aaa;cursor:not-allowed;}
+  .btn-secondary{background:transparent;color:var(--navy);border:1.5px solid var(--navy);padding:12px 24px;border-radius:var(--radius);font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;width:100%;transition:all .15s;font-weight:500;}
+  .btn-secondary:hover{background:var(--navy-lt);}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+  .btn-ghost:hover{border-color:var(--navy);color:var(--navy);}
+  .btn-danger{background:var(--danger);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+  .btn-sm{padding:6px 14px;font-size:13px;width:auto;}
+
+  /* FORMS */
+  label{font-size:13px;font-weight:500;color:var(--muted);display:block;margin-bottom:6px;letter-spacing:.02em;text-transform:uppercase;}
+  input[type=text],input[type=email],input[type=tel],input[type=password],input[type=date],input[type=number],select,textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--white);outline:none;transition:border-color .15s;}
+  input:focus,select:focus,textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(26,39,68,.1);}
+  .form-group{margin-bottom:1.25rem;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+
+  /* CARDS & BADGES */
+  .card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:1.5rem;}
+  .badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;letter-spacing:.03em;}
+  .badge-navy{background:var(--navy-lt);color:var(--navy);}
+  .badge-red{background:var(--red-lt);color:var(--red);}
+  .badge-gray{background:#f1f0eb;color:var(--muted);}
+  .badge-green{background:#e8f5e9;color:#2e7d32;}
+  .badge-orange{background:#fff3e0;color:#e65100;}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:2rem;right:2rem;background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateY(0);}
+  .toast.success{background:var(--navy);}
+  .toast.error{background:var(--danger);}
+
+  /* HERO */
+  .hero{background:var(--navy);color:#fff;padding:5rem 2rem 4rem;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'⚒';position:absolute;font-size:300px;opacity:.04;top:-40px;right:-40px;pointer-events:none;}
+  .hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:var(--red);}
+  .hero h1{font-size:clamp(2.4rem,5vw,3.8rem);color:#fff;margin-bottom:.75rem;}
+  .hero h1 em{color:var(--red-md);font-style:normal;}
+  .hero p{font-size:1.1rem;opacity:.85;max-width:520px;margin:0 auto 2rem;}
+  .hero-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+  .btn-hero-primary{background:var(--red);color:#fff;border:none;padding:15px 32px;border-radius:var(--radius);font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-hero-primary:hover{background:#a93226;}
+  .btn-hero-secondary{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.4);padding:15px 32px;border-radius:var(--radius);font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+  .btn-hero-secondary:hover{border-color:#fff;}
+
+  /* TRUST BAR */
+  .trust-bar{background:var(--white);border-bottom:1px solid var(--border);display:flex;justify-content:center;gap:2.5rem;padding:1rem 2rem;flex-wrap:wrap;}
+  .trust-item{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+  .trust-item strong{color:var(--ink);}
+
+  /* SECTIONS */
+  .section{padding:3.5rem 2rem;}
+  .section-title{text-align:center;margin-bottom:2.5rem;}
+  .section-title h2{font-size:2rem;margin-bottom:.5rem;}
+  .section-title p{color:var(--muted);max-width:480px;margin:0 auto;}
+
+  /* SERVICES GRID */
+  .services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;max-width:900px;margin:0 auto 2.5rem;}
+  .service-pill{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center;transition:all .15s;}
+  .service-pill:hover{border-color:var(--navy-md);transform:translateY(-2px);}
+  .service-pill .pill-icon{font-size:28px;margin-bottom:.5rem;}
+  .service-pill .pill-name{font-size:13px;font-weight:500;color:var(--ink);}
+
+  /* HANDYMAN CARDS */
+  .handymen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.5rem;max-width:900px;margin:0 auto;}
+  .handyman-card{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:1.75rem;cursor:pointer;transition:all .2s;}
+  .handyman-card:hover{border-color:var(--navy-md);transform:translateY(-3px);box-shadow:0 8px 24px rgba(26,39,68,.1);}
+  .handyman-avatar{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:1rem;background:var(--navy-lt);color:var(--navy);}
+  .handyman-name{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;margin-bottom:4px;}
+  .handyman-zone{font-size:13px;color:var(--muted);margin-bottom:12px;}
+  .stars{color:#c9963a;font-size:14px;margin-bottom:12px;}
+  .handyman-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.25rem;}
+
+  /* HOW IT WORKS */
+  .how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:700px;margin:0 auto;}
+  .how-step{text-align:center;padding:1.5rem 1rem;}
+  .how-num{width:44px;height:44px;border-radius:50%;background:var(--navy);color:#fff;font-family:'Playfair Display',serif;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;}
+  .how-step h3{font-size:1rem;margin-bottom:.4rem;}
+  .how-step p{font-size:13px;color:var(--muted);}
+
+  /* PRICING */
+  .pricing-table{max-width:680px;margin:0 auto;border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+  .pricing-table table{width:100%;border-collapse:collapse;font-size:14px;}
+  .pricing-table th{background:var(--navy);color:#fff;padding:12px 16px;text-align:left;font-weight:500;font-family:'DM Sans',sans-serif;}
+  .pricing-table td{padding:12px 16px;border-top:1px solid var(--border);}
+  .pricing-table tr:nth-child(even) td{background:var(--cream);}
+
+  /* FOOTER CTA */
+  .footer-cta{background:var(--navy);color:#fff;text-align:center;padding:3.5rem 2rem;position:relative;overflow:hidden;}
+  .footer-cta::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:var(--red);}
+  .footer-cta h2{color:#fff;font-size:2rem;margin-bottom:.75rem;}
+  .footer-cta p{opacity:.8;margin-bottom:2rem;}
+
+  /* BOOKING */
+  .booking-header{background:var(--navy);color:#fff;padding:2rem;text-align:center;border-bottom:4px solid var(--red);}
+  .booking-header h2{color:#fff;font-size:1.6rem;margin-bottom:.25rem;}
+  .booking-header p{opacity:.8;font-size:14px;}
+  .booking-layout{display:grid;grid-template-columns:1fr 320px;gap:2rem;max-width:900px;margin:2rem auto;padding:0 1.5rem;}
+  .booking-form-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:1.75rem;margin-bottom:1rem;}
+  .booking-form-card h3{font-size:.85rem;margin-bottom:1.25rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-family:'DM Sans',sans-serif;font-weight:500;}
+  .hm-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.75rem;margin-bottom:1.25rem;}
+  .hm-opt{border:1.5px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:all .15s;text-align:center;}
+  .hm-opt:hover{border-color:var(--navy-md);}
+  .hm-opt.selected{border-color:var(--navy);background:var(--navy-lt);}
+  .hm-opt .opt-name{font-weight:500;font-size:14px;margin-bottom:2px;}
+  .hm-opt .opt-zone{font-size:11px;color:var(--muted);}
+  .svc-opts{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:1.25rem;}
+  .svc-opt{border:1.5px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:all .15s;}
+  .svc-opt:hover{border-color:var(--navy-md);}
+  .svc-opt.selected{border-color:var(--navy);background:var(--navy-lt);}
+  .svc-opt .svc-name{font-size:13px;font-weight:500;margin-bottom:2px;}
+  .svc-opt .svc-desc{font-size:11px;color:var(--muted);}
+  .time-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1.25rem;}
+  .time-slot{border:1px solid var(--border);border-radius:8px;padding:8px 4px;font-size:13px;cursor:pointer;text-align:center;transition:all .15s;}
+  .time-slot:hover{border-color:var(--navy-md);background:var(--navy-lt);}
+  .time-slot.selected{border-color:var(--navy);background:var(--navy-lt);color:var(--navy);font-weight:500;}
+  .summary-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:1.5rem;position:sticky;top:80px;}
+  .summary-card h3{font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:1rem;font-family:'DM Sans',sans-serif;font-weight:500;}
+  .summary-row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:.6rem;}
+  .summary-row.total{font-weight:500;font-size:16px;padding-top:.75rem;border-top:1px solid var(--border);margin-top:.75rem;}
+  .price-big{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--navy);text-align:center;margin:1rem 0;}
+
+  /* CHECKOUT */
+  .checkout-layout{display:grid;grid-template-columns:1fr 320px;gap:2rem;max-width:900px;margin:2rem auto;padding:0 1.5rem;}
+  .stripe-mock{background:var(--navy);color:#fff;border-radius:16px;padding:2rem;text-align:center;border-bottom:4px solid var(--red);}
+  .stripe-mock h3{color:#fff;font-size:1.1rem;margin-bottom:.5rem;}
+  .stripe-mock p{opacity:.8;font-size:13px;margin-bottom:1.5rem;}
+  .stripe-mock .amount{font-family:'Playfair Display',serif;font-size:2.5rem;font-weight:700;color:var(--red-md);margin-bottom:1.5rem;}
+
+  /* CONFIRM */
+  .confirm-wrap{max-width:560px;margin:3rem auto;padding:0 1.5rem;text-align:center;}
+  .confirm-icon{width:80px;height:80px;border-radius:50%;background:var(--navy);color:#fff;font-size:36px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;}
+  .confirm-wrap h2{font-size:2rem;margin-bottom:.75rem;}
+  .confirm-wrap p{color:var(--muted);margin-bottom:2rem;}
+  .confirm-details{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:1.5rem;text-align:left;margin-bottom:1.5rem;}
+  .confirm-row{display:flex;justify-content:space-between;font-size:14px;padding:.5rem 0;border-bottom:1px solid var(--border);}
+  .confirm-row:last-child{border-bottom:none;}
+  .confirm-row span:first-child{color:var(--muted);}
+  .confirm-row span:last-child{font-weight:500;}
+
+  /* SIGNUP */
+  .signup-header{background:var(--navy);color:#fff;padding:3rem 2rem;text-align:center;border-bottom:4px solid var(--red);}
+  .signup-header h1{color:#fff;font-size:2rem;margin-bottom:.5rem;}
+  .signup-header p{opacity:.8;}
+  .signup-wrap{max-width:620px;margin:2rem auto;padding:0 1.5rem;}
+  .day-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:1.25rem;}
+  .day-opt{border:1.5px solid var(--border);border-radius:8px;padding:8px;text-align:center;font-size:13px;cursor:pointer;transition:all .15s;}
+  .day-opt:hover{border-color:var(--navy-md);}
+  .day-opt.selected{border-color:var(--navy);background:var(--navy-lt);color:var(--navy);font-weight:500;}
+  .photo-upload{border:2px dashed var(--border);border-radius:12px;padding:2rem;text-align:center;cursor:pointer;transition:all .15s;}
+  .photo-upload:hover{border-color:var(--navy-md);background:var(--navy-lt);}
+
+  /* PORTAL */
+  .portal-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 60px);}
+  .portal-sidebar{background:var(--ink);padding:1.5rem 0;}
+  .portal-sidebar .nav-item{display:flex;align-items:center;gap:10px;padding:10px 1.5rem;font-size:14px;color:rgba(255,255,255,.6);cursor:pointer;transition:all .15s;}
+  .portal-sidebar .nav-item:hover{color:#fff;background:rgba(255,255,255,.05);}
+  .portal-sidebar .nav-item.active{color:#fff;background:rgba(255,255,255,.1);border-left:3px solid var(--red);}
+  .portal-content{padding:2rem;background:var(--cream);}
+  .portal-section{display:none;}.portal-section.active{display:block;}
+  .portal-section h2{font-size:1.4rem;margin-bottom:1.5rem;}
+  .tier-row{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:.75rem;align-items:center;margin-bottom:.75rem;}
+  .tier-label{font-size:13px;font-weight:500;color:var(--ink);}
+
+  /* ADMIN */
+  .admin-header{background:var(--ink);color:#fff;padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid var(--red);}
+  .admin-header h2{color:#fff;font-size:1.1rem;font-family:'DM Sans',sans-serif;font-weight:500;}
+  .admin-wrap{max-width:1100px;margin:0 auto;padding:2rem 1.5rem;}
+  .metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+  .metric-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.25rem;}
+  .metric-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem;}
+  .metric-val{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--navy);}
+  .admin-tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;border-bottom:1px solid var(--border);}
+  .admin-tab{padding:10px 20px;font-size:14px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;font-family:'DM Sans',sans-serif;}
+  .admin-tab.active{color:var(--navy);border-bottom-color:var(--navy);font-weight:500;}
+  .admin-panel{display:none;}.admin-panel.active{display:block;}
+  .data-table{background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+  .table-header{padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+  .table-header h3{font-size:.95rem;font-family:'DM Sans',sans-serif;font-weight:500;}
+  table.tbl{width:100%;border-collapse:collapse;font-size:13px;}
+  table.tbl th{padding:10px 16px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:.04em;}
+  table.tbl td{padding:12px 16px;border-bottom:1px solid var(--border);}
+  table.tbl tr:last-child td{border-bottom:none;}
+  table.tbl tr:hover td{background:var(--cream);}
+  .pending-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+  .pending-info h4{font-size:15px;font-weight:500;margin-bottom:2px;}
+  .pending-info p{font-size:13px;color:var(--muted);}
+  .pending-actions{display:flex;gap:.5rem;flex-shrink:0;}
+  .login-wrap{max-width:380px;margin:5rem auto;padding:0 1.5rem;}
+  .login-card{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:2.5rem;text-align:center;}
+  .login-card h2{font-size:1.5rem;margin-bottom:.5rem;}
+  .login-card p{color:var(--muted);font-size:13px;margin-bottom:1.75rem;}
+  .error-msg{color:var(--danger);font-size:13px;margin-top:.5rem;}
+
+  @media(max-width:720px){
+    .booking-layout,.checkout-layout{grid-template-columns:1fr;}
+    .form-row{grid-template-columns:1fr;}
+    .how-grid{grid-template-columns:1fr;}
+    .metrics-grid{grid-template-columns:repeat(2,1fr);}
+    .portal-layout{grid-template-columns:1fr;}
+    .portal-sidebar{display:flex;overflow-x:auto;padding:.5rem;}
+    .portal-sidebar .nav-item{flex-direction:column;gap:4px;font-size:11px;padding:.75rem 1rem;white-space:nowrap;}
+  }
+
+  .agreement-box{border:1.5px solid var(--border);border-radius:10px;background:var(--cream);padding:1.25rem;max-height:280px;overflow-y:auto;font-size:13px;color:var(--ink);line-height:1.7;margin-bottom:1rem;}
+  .agreement-box h4{font-size:14px;font-weight:500;margin-bottom:.75rem;color:var(--navy);}
+  .agreement-box h5{font-size:13px;font-weight:500;margin:.75rem 0 .25rem;}
+  .agreement-box p{margin-bottom:.6rem;}
+  .agreement-check{display:flex;align-items:flex-start;gap:10px;padding:1rem;background:var(--navy-lt);border-radius:10px;border:1.5px solid var(--border);cursor:pointer;}
+  .agreement-check input[type=checkbox]{width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:var(--navy);cursor:pointer;}
+  .agreement-check label{font-size:13px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0;font-weight:400;}
+  .agreement-check label strong{color:var(--navy);}
+
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+<!-- ═══════════════════ HOME ═══════════════════ -->
+<div id="screen-home" class="screen active">
+  <nav>
+    <div class="nav-brand" onclick="showScreen('home')">Hande<span>monium</span></div>
+    <div class="nav-links">
+      <a onclick="document.getElementById('pricing-section').scrollIntoView({behavior:'smooth'})">Pricing</a>
+      <a onclick="showScreen('signup')">Join as handyman</a>
+      <a onclick="showScreen('admin-gate')">Admin</a>
+      <button class="btn-nav" onclick="startBooking('any')">Book now</button>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div style="display:inline-block;background:rgba(255,255,255,.12);color:#fff;font-size:12px;padding:4px 14px;border-radius:20px;margin-bottom:14px;letter-spacing:.04em;">Serving Greater LA</div>
+    <h1>Order from <em>chaos.</em></h1>
+    <p>Vetted, reliable handymen for every job around your home. Your mayhem, expertly managed.</p>
+    <div class="hero-actions">
+      <button class="btn-hero-primary" onclick="startBooking('any')">Book a handyman</button>
+      <button class="btn-hero-secondary" onclick="document.getElementById('services-section').scrollIntoView({behavior:'smooth'})">What we fix ↓</button>
+    </div>
+  </div>
+
+  <div class="trust-bar">
+    <div class="trust-item">⚒ <strong>Background checked</strong></div>
+    <div class="trust-item">★ <strong>Top-rated pros</strong></div>
+    <div class="trust-item">✓ <strong>Licensed & insured</strong></div>
+    <div class="trust-item">🔒 <strong>Stripe-secured payments</strong></div>
+  </div>
+
+  <!-- Services -->
+  <div class="section" id="services-section">
+    <div class="section-title">
+      <h2>Whatever the job</h2>
+      <p>From a leaky faucet to a full furniture assembly — we've got it handled.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-pill"><div class="pill-icon">🔧</div><div class="pill-name">Plumbing</div></div>
+      <div class="service-pill"><div class="pill-icon">⚡</div><div class="pill-name">Electrical</div></div>
+      <div class="service-pill"><div class="pill-icon">🪟</div><div class="pill-name">Doors & windows</div></div>
+      <div class="service-pill"><div class="pill-icon">🪑</div><div class="pill-name">Furniture assembly</div></div>
+      <div class="service-pill"><div class="pill-icon">🎨</div><div class="pill-name">Painting</div></div>
+      <div class="service-pill"><div class="pill-icon">🪛</div><div class="pill-name">General repairs</div></div>
+      <div class="service-pill"><div class="pill-icon">📦</div><div class="pill-name">Mounting & hanging</div></div>
+      <div class="service-pill"><div class="pill-icon">🚿</div><div class="pill-name">Bathroom</div></div>
+      <div class="service-pill"><div class="pill-icon">🏠</div><div class="pill-name">Drywall</div></div>
+      <div class="service-pill"><div class="pill-icon">🌿</div><div class="pill-name">Outdoor / deck</div></div>
+    </div>
+    <p style="text-align:center;font-size:13px;color:var(--muted)">Don't see your job? <a onclick="startBooking('any')" style="color:var(--navy);cursor:pointer;font-weight:500">Book anyway and describe it →</a></p>
+  </div>
+
+  <!-- Handymen -->
+  <div class="section" style="background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border);" id="handymen-section">
+    <div class="section-title">
+      <h2>Meet the crew</h2>
+      <p>Vetted, background-checked pros. Pick yours or let us match you.</p>
+    </div>
+    <div class="handymen-grid" id="handymen-list">
+      <div style="text-align:center;color:var(--muted);padding:2rem;grid-column:1/-1">Loading crew…</div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="section">
+    <div class="section-title"><h2>How it works</h2></div>
+    <div class="how-grid">
+      <div class="how-step"><div class="how-num">1</div><h3>Describe the job</h3><p>Tell us what needs fixing, how big the job is, and when you need it done.</p></div>
+      <div class="how-step"><div class="how-num">2</div><h3>Pick your pro</h3><p>Browse vetted handymen by specialty and area. See real reviews.</p></div>
+      <div class="how-step"><div class="how-num">3</div><h3>Relax, it's handled</h3><p>Pay securely via Stripe. Your handyman shows up. Order restored.</p></div>
+    </div>
+  </div>
+
+  <!-- Pricing -->
+  <div class="section" style="background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border);" id="pricing-section">
+    <div class="section-title">
+      <h2>Transparent pricing</h2>
+      <p>Flat rates by job size. No surprise invoices.</p>
+    </div>
+    <div class="pricing-table">
+      <table>
+        <thead><tr><th>Job size</th><th>Estimated time</th><th>Rate</th></tr></thead>
+        <tbody>
+          <tr><td>Small fix</td><td>Up to 1 hour</td><td>$95</td></tr>
+          <tr><td>Half day</td><td>2–3 hours</td><td>$195</td></tr>
+          <tr><td>Full day</td><td>4–6 hours</td><td>$345</td></tr>
+          <tr><td>Multi-day project</td><td>Custom</td><td>Quoted on booking</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:1rem;">First job? Use code <strong>CHAOS20</strong> for 20% off.</p>
+  </div>
+
+  <div class="footer-cta">
+    <h2>Ready to restore order?</h2>
+    <p>Serving Greater LA. Book a vetted handyman in under 2 minutes.</p>
+    <button class="btn-hero-primary" onclick="startBooking('any')">Book now →</button>
+    <p style="margin-top:1.5rem;opacity:.6;font-size:13px;">Are you a handyman? <a onclick="showScreen('signup')" style="color:#fff;cursor:pointer;text-decoration:underline;">Join the crew →</a></p>
+  </div>
+</div>
+
+<!-- ═══════════════════ BOOKING ═══════════════════ -->
+<div id="screen-booking" class="screen">
+  <nav>
+    <div class="nav-brand" onclick="showScreen('home')">Hande<span>monium</span></div>
+    <div class="nav-links"><button class="btn-ghost" onclick="showScreen('home')">← Back</button></div>
+  </nav>
+  <div class="booking-header"><h2>Book your handyman</h2><p>Describe your job and pick a time — price updates instantly.</p></div>
+  <div class="booking-layout">
+    <div>
+      <div class="booking-form-card">
+        <h3>Your handyman</h3>
+        <div class="hm-picker" id="booking-hm-picker"></div>
+        <h3>Job size</h3>
+        <div class="svc-opts">
+          <div class="svc-opt" id="svc-small" onclick="selectService('small','Small fix','$95')"><div class="svc-name">Small fix</div><div class="svc-desc">Up to 1 hr · $95</div></div>
+          <div class="svc-opt" id="svc-half" onclick="selectService('half','Half day','$195')"><div class="svc-name">Half day</div><div class="svc-desc">2–3 hrs · $195</div></div>
+          <div class="svc-opt" id="svc-full" onclick="selectService('full','Full day','$345')"><div class="svc-name">Full day</div><div class="svc-desc">4–6 hrs · $345</div></div>
+          <div class="svc-opt" id="svc-multi" onclick="selectService('multi','Multi-day','TBD')"><div class="svc-name">Multi-day</div><div class="svc-desc">Custom project · quoted</div></div>
+        </div>
+        <h3>Job description</h3>
+        <div class="form-group">
+          <textarea id="job-desc" rows="3" placeholder="Describe what needs fixing — the more detail the better (e.g. 'leaking faucet under kitchen sink, also need TV mounted on bedroom wall')" style="resize:vertical"></textarea>
+        </div>
+      </div>
+
+      <div class="booking-form-card">
+        <h3>Date & time</h3>
+        <div class="form-row" style="margin-bottom:1rem;">
+          <div class="form-group" style="margin-bottom:0"><label>Date</label><input type="date" id="booking-date" min=""/></div>
+          <div class="form-group" style="margin-bottom:0"><label>Neighborhood</label><input type="text" id="booking-area" placeholder="e.g. Burbank"/></div>
+        </div>
+        <label style="margin-bottom:.6rem">Preferred start time</label>
+        <div class="time-slots">
+          <div class="time-slot" onclick="selectTime('8:00 AM')">8:00 AM</div>
+          <div class="time-slot" onclick="selectTime('9:00 AM')">9:00 AM</div>
+          <div class="time-slot" onclick="selectTime('10:00 AM')">10:00 AM</div>
+          <div class="time-slot" onclick="selectTime('11:00 AM')">11:00 AM</div>
+          <div class="time-slot" onclick="selectTime('12:00 PM')">12:00 PM</div>
+          <div class="time-slot" onclick="selectTime('1:00 PM')">1:00 PM</div>
+          <div class="time-slot" onclick="selectTime('2:00 PM')">2:00 PM</div>
+          <div class="time-slot" onclick="selectTime('3:00 PM')">3:00 PM</div>
+          <div class="time-slot" onclick="selectTime('4:00 PM')">4:00 PM</div>
+        </div>
+      </div>
+
+      <div class="booking-form-card">
+        <h3>Your details</h3>
+        <div class="form-row">
+          <div class="form-group"><label>First name</label><input type="text" id="f-fname" placeholder="John"/></div>
+          <div class="form-group"><label>Last name</label><input type="text" id="f-lname" placeholder="Smith"/></div>
+        </div>
+        <div class="form-group"><label>Email</label><input type="email" id="f-email" placeholder="john@email.com"/></div>
+        <div class="form-group"><label>Phone</label><input type="tel" id="f-phone" placeholder="(310) 555-0100"/></div>
+        <div class="form-group"><label>Address</label><input type="text" id="f-address" placeholder="123 Main St, Los Angeles, CA"/></div>
+        <div id="booking-error" style="color:var(--danger);font-size:13px;margin-bottom:.75rem;display:none"></div>
+        <button class="btn-primary" onclick="goToCheckout()">Continue to payment →</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="summary-card">
+        <h3>Your booking</h3>
+        <div id="summary-hm" class="summary-row"><span>Handyman</span><span style="color:var(--muted)">—</span></div>
+        <div id="summary-svc" class="summary-row"><span>Job size</span><span style="color:var(--muted)">—</span></div>
+        <div id="summary-date" class="summary-row"><span>Date</span><span style="color:var(--muted)">—</span></div>
+        <div id="summary-time" class="summary-row"><span>Time</span><span style="color:var(--muted)">—</span></div>
+        <div id="price-display" class="price-big">—</div>
+        <div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:1rem">Paid securely via Stripe before your job</div>
+        <div style="display:flex;align-items:center;gap:6px;justify-content:center;font-size:12px;color:var(--muted)">🔒 SSL encrypted · No card stored</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ CHECKOUT ═══════════════════ -->
+<div id="screen-checkout" class="screen">
+  <nav>
+    <div class="nav-brand" onclick="showScreen('home')">Hande<span>monium</span></div>
+    <div class="nav-links"><button class="btn-ghost" onclick="showScreen('booking')">← Edit booking</button></div>
+  </nav>
+  <div class="checkout-layout">
+    <div>
+      <div class="booking-form-card" style="margin-bottom:1rem;">
+        <h3 style="font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:500;margin-bottom:1.25rem">Booking summary</h3>
+        <div id="checkout-summary"></div>
+      </div>
+      <div class="booking-form-card">
+        <h3 style="font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:500;margin-bottom:1.25rem">Promo code</h3>
+        <div style="display:flex;gap:.75rem;">
+          <input type="text" id="promo-input" placeholder="Enter code (try CHAOS20)" style="flex:1"/>
+          <button class="btn-ghost" onclick="applyPromo()" style="white-space:nowrap">Apply</button>
+        </div>
+        <div id="promo-msg" style="font-size:13px;margin-top:.5rem;"></div>
+      </div>
+    </div>
+    <div>
+      <div class="stripe-mock">
+        <div style="font-size:32px;margin-bottom:1rem">🔒</div>
+        <h3>Secure payment</h3>
+        <p>You'll be redirected to Stripe's secure checkout to complete payment.</p>
+        <div class="amount" id="checkout-total">$0</div>
+        <button class="btn-hero-primary" style="width:100%;font-size:15px;padding:14px" onclick="completePurchase()">Pay with Stripe →</button>
+        <p style="margin-top:1rem;font-size:11px;opacity:.6">Visa · Mastercard · Amex · Apple Pay · Google Pay</p>
+      </div>
+      <div style="margin-top:1rem;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1rem;font-size:13px;color:var(--muted)">
+        <strong style="color:var(--ink);display:block;margin-bottom:.4rem">Cancellation policy</strong>
+        Free cancellation up to 24 hours before your scheduled job.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ CONFIRM ═══════════════════ -->
+<div id="screen-confirm" class="screen">
+  <nav><div class="nav-brand" onclick="showScreen('home')">Hande<span>monium</span></div></nav>
+  <div class="confirm-wrap">
+    <div class="confirm-icon">⚒</div>
+    <h2>Order incoming!</h2>
+    <p>Your booking is confirmed. Your handyman will be in touch within 2 hours to confirm details.</p>
+    <div class="confirm-details" id="confirm-details"></div>
+    <button class="btn-primary" style="margin-bottom:.75rem" onclick="showScreen('home')">Back to home</button>
+    <button class="btn-secondary" onclick="startBooking('any')">Book another job</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ HANDYMAN SIGNUP ═══════════════════ -->
+<div id="screen-signup" class="screen">
+  <nav>
+    <div class="nav-brand" onclick="showScreen('home')">Hande<span>monium</span></div>
+    <div class="nav-links">
+      <a onclick="showScreen('login')">Already on the crew? Sign in</a>
+      <button class="btn-ghost" onclick="showScreen('home')">← Home</button>
+    </div>
+  </nav>
+  <div class="signup-header">
+    <h1>Join the crew</h1>
+    <p>Apply to become a Handemonium pro. We review every application personally.</p>
+  </div>
+  <div class="signup-wrap">
+    <div class="card" style="margin-bottom:1rem;">
+      <h3 style="font-size:1rem;margin-bottom:1.25rem">Your details</h3>
+      <div class="form-row">
+        <div class="form-group"><label>First name</label><input type="text" id="cs-fname" placeholder="Mike"/></div>
+        <div class="form-group"><label>Last name</label><input type="text" id="cs-lname" placeholder="Johnson"/></div>
+      </div>
+      <div class="form-group"><label>Email</label><input type="email" id="cs-email" placeholder="mike@email.com"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="cs-password" placeholder="Min. 8 characters"/></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="cs-phone" placeholder="(310) 555-0100"/></div>
+      <div class="form-group"><label>Years of experience</label><input type="number" id="cs-exp" placeholder="e.g. 8" min="0" max="50"/></div>
+      <div class="form-group">
+        <label>Short bio</label>
+        <textarea id="cs-bio" rows="3" placeholder="Tell customers about your skills, experience, and what makes you great…" style="resize:vertical"></textarea>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <h3 style="font-size:1rem;margin-bottom:1.25rem">Profile photo</h3>
+      <div class="photo-upload" onclick="document.getElementById('cs-photo-input').click()">
+        <img id="cs-photo-preview" src="" style="display:none;width:80px;height:80px;border-radius:50%;object-fit:cover;margin:0 auto .75rem"/>
+        <div id="cs-photo-placeholder">
+          <div style="font-size:32px;margin-bottom:.5rem">📷</div>
+          <div style="font-size:14px;font-weight:500;margin-bottom:4px">Upload a photo</div>
+          <div style="font-size:12px;color:var(--muted)">JPG or PNG, max 5MB</div>
+        </div>
+      </div>
+      <input type="file" id="cs-photo-input" accept="image/*" style="display:none" onchange="previewPhoto(this)"/>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <h3 style="font-size:1rem;margin-bottom:1.25rem">Specialties</h3>
+      <div class="form-group">
+        <label>What are you best at? (select all that apply)</label>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;margin-top:.5rem" id="specialty-grid">
+          <label style="text-transform:none;letter-spacing:0;font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" value="Plumbing"/> Plumbing</label>
+          <label style="text-transform:none;letter-spacing:0;font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" value="Electrical"/> Electrical</label>
+          <label style="text-transform:none;letter-spacing:0;font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" value="Painting"/> Painting</label>
+          <label style="text-transform:none;letter-spacing:0;font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" value="Carpentry"/> Carpentry</label>
+          <label style="text-transform:none;letter-spacing:0;font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" value="Drywall"/> Drywall</label>
+          <label style="text-transform:none;letter-spacing:0;font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" value="Furniture assembly"/> Furniture assembly</label>
+          <label style="text-transform:none;letter-spacing:0;font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" value="Doors & windows"/> Doors & windows</label>
+          <label style="text-transform:none;letter-spacing:0;font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" value="Outdoor & deck"/> Outdoor & deck</label>
+          <label style="text-transform:none;letter-spacing:0;font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" value="General repairs"/> General repairs</label>
+          <label style="text-transform:none;letter-spacing:0;font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" value="Mounting & hanging"/> Mounting & hanging</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <h3 style="font-size:1rem;margin-bottom:1.25rem">Service areas</h3>
+      <div class="form-group">
+        <label>Areas you cover (separate with commas)</label>
+        <input type="text" id="cs-areas" placeholder="e.g. Burbank, Glendale, Pasadena"/>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <h3 style="font-size:1rem;margin-bottom:1.25rem">Your availability</h3>
+      <div class="day-grid">
+        <div class="day-opt" onclick="toggleDay(this,'monday')">Mon</div>
+        <div class="day-opt" onclick="toggleDay(this,'tuesday')">Tue</div>
+        <div class="day-opt" onclick="toggleDay(this,'wednesday')">Wed</div>
+        <div class="day-opt" onclick="toggleDay(this,'thursday')">Thu</div>
+        <div class="day-opt" onclick="toggleDay(this,'friday')">Fri</div>
+        <div class="day-opt" onclick="toggleDay(this,'saturday')">Sat</div>
+        <div class="day-opt" onclick="toggleDay(this,'sunday')">Sun</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Usually start</label>
+          <select id="cs-start-time">
+            <option>7:00 AM</option><option>8:00 AM</option><option selected>9:00 AM</option><option>10:00 AM</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Usually finish</label>
+          <select id="cs-end-time">
+            <option>3:00 PM</option><option>4:00 PM</option><option selected>5:00 PM</option><option>6:00 PM</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <h3 style="font-size:1rem;margin-bottom:.5rem">Your rates</h3>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem">Set your flat rates per job size. Platform minimums apply.</p>
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:.5rem;margin-bottom:.5rem;padding:0 4px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Job size</div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Your rate $</div>
+      </div>
+      <div id="tier-rows"></div>
+    </div>
+
+
+    <div class="card" style="margin-bottom:1rem;">
+      <h3 style="font-size:1rem;margin-bottom:.5rem">Service agreement</h3>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">Please read and accept the Handemonium Independent Contractor Agreement before submitting your application.</p>
+      <div class="agreement-box">
+        <h4>Handemonium Independent Contractor Agreement</h4>
+        <p>This Independent Contractor Agreement ("Agreement") is entered into between Handemonium ("Platform") and the individual applying to provide services through the Platform ("Contractor"). By accepting this Agreement, Contractor agrees to the following terms:</p>
+
+        <h5>1. Independent contractor status</h5>
+        <p>Contractor is an independent contractor and not an employee, partner, agent, or joint venture partner of Handemonium. Contractor is solely responsible for all taxes, insurance, and compliance with applicable laws arising from services performed. Handemonium will not withhold any taxes or provide any employee benefits.</p>
+
+        <h5>2. Services</h5>
+        <p>Contractor agrees to provide handyman and home repair services to customers booked through the Handemonium platform. Contractor agrees to perform all services in a professional, timely, and workmanlike manner consistent with industry standards.</p>
+
+        <h5>3. Licensing & insurance</h5>
+        <p>Contractor represents and warrants that they hold all licenses, certifications, and permits required by applicable law to perform the services offered. Contractor agrees to maintain general liability insurance with minimum coverage of $1,000,000 per occurrence and to provide proof of insurance upon request.</p>
+
+        <h5>4. Platform fees</h5>
+        <p>Handemonium charges a platform fee of 15% on all completed bookings. This fee is deducted from the customer payment before remittance to the Contractor. Contractor agrees to the platform pricing minimums as established and updated by Handemonium from time to time.</p>
+
+        <h5>5. Conduct & professionalism</h5>
+        <p>Contractor agrees to: (a) arrive on time for all scheduled jobs; (b) treat all customers with respect and professionalism; (c) maintain a clean and safe work environment; (d) communicate promptly with customers and the Platform; (e) not solicit customers to book services outside the Platform for a period of 12 months following any job completed through the Platform.</p>
+
+        <h5>6. Background check consent</h5>
+        <p>Contractor consents to a background check as a condition of approval on the Platform. Handemonium reserves the right to deny or revoke access based on background check results at its sole discretion.</p>
+
+        <h5>7. Dispute resolution</h5>
+        <p>Any disputes arising out of or related to this Agreement shall be resolved through binding arbitration in Los Angeles County, California, in accordance with the rules of the American Arbitration Association. California law shall govern this Agreement.</p>
+
+        <h5>8. Termination</h5>
+        <p>Either party may terminate this Agreement at any time with 7 days written notice. Handemonium may terminate immediately for cause, including but not limited to, customer complaints, safety violations, or breach of this Agreement.</p>
+
+        <h5>9. Limitation of liability</h5>
+        <p>Handemonium's liability to Contractor shall not exceed the total platform fees paid in the 30 days preceding the claim. Handemonium is not liable for any indirect, incidental, or consequential damages.</p>
+
+        <h5>10. Entire agreement</h5>
+        <p>This Agreement constitutes the entire agreement between the parties and supersedes all prior agreements. Handemonium may update these terms with 14 days notice via email.</p>
+      </div>
+      <div class="agreement-check">
+        <input type="checkbox" id="agreement-check" onchange="checkAgreement()"/>
+        <label for="agreement-check">I have read, understood, and agree to the <strong>Handemonium Independent Contractor Agreement</strong>. I confirm that all information provided in this application is accurate and complete.</label>
+      </div>
+    </div>
+
+    <div id="signup-error" style="color:var(--danger);font-size:13px;margin-bottom:.75rem;display:none"></div>
+    <button class="btn-primary" id="submit-btn" onclick="submitSignup()" style="margin-bottom:2rem;opacity:.5;cursor:not-allowed" disabled>Submit application →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ LOGIN ═══════════════════ -->
+<div id="screen-login" class="screen">
+  <nav>
+    <div class="nav-brand" onclick="showScreen('home')">Hande<span>monium</span></div>
+    <div class="nav-links"><button class="btn-ghost" onclick="showScreen('home')">← Home</button></div>
+  </nav>
+  <div class="login-wrap">
+    <div class="login-card">
+      <div style="font-size:32px;margin-bottom:.75rem">⚒</div>
+      <h2>Crew sign in</h2>
+      <p>Log in to manage your profile, calendar and jobs.</p>
+      <div class="form-group"><label>Email</label><input type="email" id="cl-email" placeholder="you@email.com" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="cl-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div id="login-error" class="error-msg" style="display:none;margin-bottom:.75rem"></div>
+      <button class="btn-primary" onclick="doLogin()">Sign in</button>
+      <p style="font-size:13px;color:var(--muted);margin-top:1.25rem">Not on the crew yet? <a onclick="showScreen('signup')" style="color:var(--navy);cursor:pointer">Apply to join →</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PORTAL ═══════════════════ -->
+<div id="screen-portal" class="screen">
+  <nav>
+    <div class="nav-brand" onclick="showScreen('home')">Hande<span>monium</span></div>
+    <div class="nav-links">
+      <span id="portal-hm-name" style="font-size:13px;color:var(--muted)"></span>
+      <button class="btn-ghost" onclick="doLogout()">Sign out</button>
+    </div>
+  </nav>
+  <div class="portal-layout">
+    <div class="portal-sidebar">
+      <div style="padding:1rem 1.5rem;margin-bottom:.5rem;"><div style="font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em">Crew portal</div></div>
+      <div class="nav-item active" onclick="switchTab('profile',this)"><span>👤</span> My profile</div>
+      <div class="nav-item" onclick="switchTab('calendar',this)"><span>📅</span> Calendar</div>
+      <div class="nav-item" onclick="switchTab('rates',this)"><span>💰</span> My rates</div>
+      <div class="nav-item" onclick="switchTab('jobs',this)"><span>🔧</span> My jobs</div>
+    </div>
+    <div class="portal-content">
+      <div class="portal-section active" id="portal-profile">
+        <h2>My profile</h2>
+        <div class="card" style="margin-bottom:1rem;">
+          <div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:1.5rem;">
+            <div id="portal-avatar" style="width:72px;height:72px;border-radius:50%;background:var(--navy-lt);color:var(--navy);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:26px;font-weight:700;cursor:pointer" onclick="document.getElementById('portal-photo-input').click()">?</div>
+            <div>
+              <div id="portal-status-badge" style="margin-bottom:6px"></div>
+              <button class="btn-ghost btn-sm" onclick="document.getElementById('portal-photo-input').click()">Change photo</button>
+              <input type="file" id="portal-photo-input" accept="image/*" style="display:none" onchange="uploadPhoto(this)"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>First name</label><input type="text" id="portal-fname"/></div>
+            <div class="form-group"><label>Last name</label><input type="text" id="portal-lname"/></div>
+          </div>
+          <div class="form-group"><label>Phone</label><input type="text" id="portal-phone"/></div>
+          <div class="form-group"><label>Service areas (comma separated)</label><input type="text" id="portal-areas"/></div>
+          <div class="form-group"><label>Bio</label><textarea id="portal-bio" rows="4" style="resize:vertical"></textarea></div>
+          <button class="btn-primary btn-sm" style="width:auto;padding:10px 24px" onclick="saveProfile()">Save changes</button>
+        </div>
+      </div>
+
+      <div class="portal-section" id="portal-calendar">
+        <h2>My calendar</h2>
+        <div class="card" style="margin-bottom:1rem;">
+          <h3 style="font-size:1rem;margin-bottom:1rem">Weekly availability</h3>
+          <div class="day-grid" id="portal-day-grid"></div>
+          <div class="form-row" style="margin-top:.75rem">
+            <div class="form-group"><label>Start time</label><select id="portal-start"><option>7:00 AM</option><option>8:00 AM</option><option>9:00 AM</option><option>10:00 AM</option></select></div>
+            <div class="form-group"><label>End time</label><select id="portal-end"><option>3:00 PM</option><option>4:00 PM</option><option>5:00 PM</option><option>6:00 PM</option></select></div>
+          </div>
+          <button class="btn-primary btn-sm" style="width:auto;padding:10px 24px" onclick="saveAvail()">Save availability</button>
+        </div>
+        <div class="card">
+          <h3 style="font-size:1rem;margin-bottom:.5rem">Block specific dates</h3>
+          <div style="display:flex;gap:.75rem;margin-bottom:1rem;">
+            <input type="date" id="block-date-input" style="flex:1"/>
+            <input type="text" id="block-date-reason" placeholder="Reason (optional)" style="flex:1"/>
+            <button class="btn-ghost" onclick="addBlock()">Block</button>
+          </div>
+          <div id="blocked-list"></div>
+        </div>
+      </div>
+
+      <div class="portal-section" id="portal-rates">
+        <h2>My rates</h2>
+        <div class="card">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem">Set your flat rates per job size. Platform minimums apply.</p>
+          <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:.5rem;margin-bottom:.75rem;padding:0 4px">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Job size</div>
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Rate $</div>
+          </div>
+          <div id="portal-tier-rows"></div>
+          <button class="btn-primary btn-sm" style="width:auto;padding:10px 24px;margin-top:1rem" onclick="saveRates()">Save rates</button>
+        </div>
+      </div>
+
+      <div class="portal-section" id="portal-jobs">
+        <h2>My jobs</h2>
+        <div class="data-table">
+          <table class="tbl">
+            <thead><tr><th>ID</th><th>Customer</th><th>Job size</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody id="portal-jobs-tbody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ ADMIN GATE ═══════════════════ -->
+<div id="screen-admin-gate" class="screen">
+  <nav>
+    <div class="nav-brand" onclick="showScreen('home')">Hande<span>monium</span></div>
+    <div class="nav-links"><button class="btn-ghost" onclick="showScreen('home')">← Home</button></div>
+  </nav>
+  <div class="login-wrap">
+    <div class="login-card">
+      <div style="font-size:32px;margin-bottom:.75rem">⚒</div>
+      <h2>Admin access</h2>
+      <p>Enter the admin password to manage jobs and crew.</p>
+      <div class="form-group"><label>Password</label><input type="password" id="admin-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkAdmin()"/></div>
+      <div id="admin-error" class="error-msg" style="display:none;margin-bottom:.75rem">Incorrect password</div>
+      <button class="btn-primary" onclick="checkAdmin()">Sign in</button>
+      <p style="font-size:12px;color:var(--muted);margin-top:1rem">Demo password: <strong>chaos2024</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ ADMIN ═══════════════════ -->
+<div id="screen-admin" class="screen">
+  <div class="admin-header">
+    <h2>⚒ Handemonium — Admin</h2>
+    <div style="display:flex;gap:.75rem;align-items:center">
+      <span style="font-size:13px;opacity:.6" id="admin-date"></span>
+      <button class="btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="showScreen('home')">← Site</button>
+    </div>
+  </div>
+  <div class="admin-wrap">
+    <div class="metrics-grid" id="metrics-grid"></div>
+    <div class="admin-tabs">
+      <div class="admin-tab active" onclick="switchAdminTab('bookings',this)">Jobs</div>
+      <div class="admin-tab" onclick="switchAdminTab('pending',this)">Pending crew <span id="pending-count-badge"></span></div>
+      <div class="admin-tab" onclick="switchAdminTab('crew',this)">All crew</div>
+    </div>
+    <div class="admin-panel active" id="admin-bookings">
+      <div class="data-table">
+        <div class="table-header"><h3>All jobs</h3></div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>#</th><th>Customer</th><th>Handyman</th><th>Job size</th><th>Date</th><th>Time</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody id="bookings-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="admin-panel" id="admin-pending">
+      <div id="pending-list"><div style="color:var(--muted);padding:2rem;text-align:center">Loading…</div></div>
+    </div>
+    <div class="admin-panel" id="admin-crew">
+      <div class="data-table">
+        <div class="table-header"><h3>All crew</h3></div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>Name</th><th>Email</th><th>Areas</th><th>Specialties</th><th>Applied</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="crew-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://hdjohnjwfkojlonlrcsu.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhkam9obmp3ZmtvamxvbmxyY3N1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTA5ODIsImV4cCI6MjA5NDkyNjk4Mn0.8wwGqxo87S-t276ccHlQJ6TzdrarhLbtiAkWXKj36sY';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+const JOB_SIZES = [
+  {key:'small', label:'Small fix', price:95, floor:80},
+  {key:'half',  label:'Half day',  price:195, floor:160},
+  {key:'full',  label:'Full day',  price:345, floor:300},
+  {key:'multi', label:'Multi-day', price:0,   floor:0}
+];
+const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+const DAY_LABELS = {monday:'Mon',tuesday:'Tue',wednesday:'Wed',thursday:'Thu',friday:'Fri',saturday:'Sat',sunday:'Sun'};
+const TIME_SLOTS = ['8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM'];
+
+let booking = {hmId:'',hmName:'',service:'',serviceLabel:'',price:0,date:'',time:'',fname:'',lname:'',email:'',phone:'',address:'',jobDesc:'',discount:0};
+let selectedDays = [];
+let portalDays = [];
+let blockedDates = [];
+let currentHM = null;
+let allCrew = [];
+
+function showScreen(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+n).classList.add('active');window.scrollTo(0,0);}
+function toast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+type;setTimeout(()=>t.classList.remove('show'),3500);}
+function fmtDate(d){return new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});}
+function statusBadge(s){const m={confirmed:'badge-green',pending:'badge-orange',cancelled:'badge-red',completed:'badge-navy',approved:'badge-green',rejected:'badge-red'};return `<span class="badge ${m[s]||'badge-gray'}">${s}</span>`;}
+
+async function loadCrew(){
+  const {data}=await sb.from('cleaners').select('*').eq('status','approved');
+  allCrew=data&&data.length?data:[];
+  renderCrewCards();
+  populateHMPicker();
+}
+
+function renderCrewCards(){
+  const grid=document.getElementById('handymen-list');
+  if(!allCrew.length){grid.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem;grid-column:1/-1">No crew members yet — be the first to <a onclick="showScreen(\'signup\')" style="color:var(--navy);cursor:pointer">join the crew</a>.</div>';return;}
+  grid.innerHTML=allCrew.map(c=>{
+    const initials=(c.first_name[0]||'')+(c.last_name?c.last_name[0]:'');
+    const photoHtml=c.photo_url?`<img src="${c.photo_url}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;margin-bottom:1rem" alt="${c.first_name}"/>`:`<div class="handyman-avatar">${initials}</div>`;
+    const areas=Array.isArray(c.service_areas)?c.service_areas.join(' · '):(c.service_areas||'');
+    const tags=Array.isArray(c.service_areas)?c.service_areas.slice(0,3):[];
+    return `<div class="handyman-card" onclick="startBooking('${c.id}')">
+      ${photoHtml}
+      <div class="handyman-name">${c.first_name} ${c.last_name||''}</div>
+      <div class="handyman-zone">📍 ${areas}</div>
+      <div class="stars">★★★★★ <span style="color:var(--muted);font-size:13px">New</span></div>
+      <div class="handyman-tags">${tags.map(t=>`<span class="badge badge-navy">${t}</span>`).join('')}<span class="badge badge-gray">Background checked</span></div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem">${(c.bio||'').substring(0,100)}${(c.bio||'').length>100?'…':''}</p>
+      <button class="btn-primary" style="font-size:13px;padding:10px">Book ${c.first_name} →</button>
+    </div>`;
+  }).join('');
+}
+
+function populateHMPicker(){
+  document.getElementById('booking-hm-picker').innerHTML=
+    `<div class="hm-opt" id="opt-any" onclick="selectHM('any','Best match')"><div style="font-size:20px;margin-bottom:4px">✨</div><div class="opt-name">Best match</div><div class="opt-zone">Auto-assign</div></div>`+
+    allCrew.map(c=>`<div class="hm-opt" id="opt-${c.id}" onclick="selectHM('${c.id}','${c.first_name}')"><div style="font-size:20px;margin-bottom:4px">${c.first_name[0]}</div><div class="opt-name">${c.first_name}</div><div class="opt-zone">${Array.isArray(c.service_areas)?c.service_areas[0]:(c.service_areas||'')}</div></div>`).join('');
+}
+
+function startBooking(id){
+  if(id&&id!=='any'){const f=allCrew.find(c=>c.id===id);if(f){booking.hmId=f.id;booking.hmName=f.first_name;}}
+  showScreen('booking');
+  const t=new Date();t.setDate(t.getDate()+1);
+  document.getElementById('booking-date').min=t.toISOString().split('T')[0];
+  populateHMPicker();
+  if(booking.hmId){const el=document.getElementById('opt-'+booking.hmId);if(el)el.classList.add('selected');}
+  updateSummary();
+}
+
+function selectHM(id,name){
+  booking.hmId=id;booking.hmName=name==='Best match'?'Best match':name;
+  document.querySelectorAll('.hm-opt').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('opt-'+id).classList.add('selected');
+  updateSummary();
+}
+
+function selectService(key,label,priceStr){
+  booking.service=key;booking.serviceLabel=label;
+  const found=JOB_SIZES.find(j=>j.key===key);
+  booking.price=found?found.price:0;
+  document.querySelectorAll('.svc-opt').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('svc-'+key).classList.add('selected');
+  updateSummary();
+}
+
+function selectTime(t){
+  booking.time=t;
+  document.querySelectorAll('.time-slot').forEach(el=>el.classList.toggle('selected',el.textContent===t));
+  updateSummary();
+}
+
+document.addEventListener('change',e=>{if(e.target.id==='booking-date'){booking.date=e.target.value;updateSummary();}});
+
+function updateSummary(){
+  const fmt=v=>v||'<span style="color:var(--muted)">—</span>';
+  const fd=d=>d?new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}):null;
+  document.getElementById('summary-hm').innerHTML=`<span>Handyman</span><span>${fmt(booking.hmName)}</span>`;
+  document.getElementById('summary-svc').innerHTML=`<span>Job size</span><span>${fmt(booking.serviceLabel)}</span>`;
+  document.getElementById('summary-date').innerHTML=`<span>Date</span><span>${fmt(fd(booking.date))}</span>`;
+  document.getElementById('summary-time').innerHTML=`<span>Time</span><span>${fmt(booking.time)}</span>`;
+  document.getElementById('price-display').textContent=booking.price?(booking.service==='multi'?'TBD':'$'+booking.price):'—';
+}
+
+function goToCheckout(){
+  booking.fname=document.getElementById('f-fname').value.trim();
+  booking.lname=document.getElementById('f-lname').value.trim();
+  booking.email=document.getElementById('f-email').value.trim();
+  booking.phone=document.getElementById('f-phone').value.trim();
+  booking.address=document.getElementById('f-address').value.trim();
+  booking.jobDesc=document.getElementById('job-desc').value.trim();
+  const err=document.getElementById('booking-error');
+  if(!booking.hmId){err.textContent='Please select a handyman.';err.style.display='block';return;}
+  if(!booking.service){err.textContent='Please select a job size.';err.style.display='block';return;}
+  if(!booking.date){err.textContent='Please select a date.';err.style.display='block';return;}
+  if(!booking.time){err.textContent='Please select a time.';err.style.display='block';return;}
+  if(!booking.fname||!booking.lname){err.textContent='Please enter your name.';err.style.display='block';return;}
+  if(!booking.email||!booking.email.includes('@')){err.textContent='Please enter a valid email.';err.style.display='block';return;}
+  if(!booking.address){err.textContent='Please enter your address.';err.style.display='block';return;}
+  err.style.display='none';
+  booking.discount=0;
+  document.getElementById('promo-input').value='';
+  document.getElementById('promo-msg').textContent='';
+  renderCheckout();
+  showScreen('checkout');
+}
+
+function renderCheckout(){
+  const total=booking.price-booking.discount;
+  const totalStr=booking.service==='multi'?'TBD':'$'+total;
+  document.getElementById('checkout-summary').innerHTML=`
+    <div class="summary-row"><span>Customer</span><span>${booking.fname} ${booking.lname}</span></div>
+    <div class="summary-row"><span>Email</span><span style="color:var(--muted)">${booking.email}</span></div>
+    <div class="summary-row"><span>Address</span><span style="text-align:right;max-width:200px">${booking.address}</span></div>
+    <div class="summary-row"><span>Handyman</span><span>${booking.hmName}</span></div>
+    <div class="summary-row"><span>Job size</span><span>${booking.serviceLabel}</span></div>
+    <div class="summary-row"><span>Date</span><span>${fmtDate(booking.date)}</span></div>
+    <div class="summary-row"><span>Time</span><span>${booking.time}</span></div>
+    ${booking.jobDesc?`<div class="summary-row"><span>Job notes</span><span style="text-align:right;max-width:200px;font-size:12px">${booking.jobDesc.substring(0,80)}</span></div>`:''}
+    ${booking.discount>0?`<div class="summary-row" style="color:var(--navy)"><span>Promo (CHAOS20)</span><span>-$${booking.discount}</span></div>`:''}
+    <div class="summary-row total"><span>Total due</span><span>${totalStr}</span></div>`;
+  document.getElementById('checkout-total').textContent=totalStr;
+}
+
+function applyPromo(){
+  const code=document.getElementById('promo-input').value.trim().toUpperCase();
+  const msg=document.getElementById('promo-msg');
+  if(code==='CHAOS20'&&booking.price>0){booking.discount=Math.round(booking.price*.2);msg.style.color='var(--navy)';msg.textContent=`✓ 20% off applied — you save $${booking.discount}!`;}
+  else{booking.discount=0;msg.style.color='var(--danger)';msg.textContent='Invalid promo code.';}
+  renderCheckout();
+}
+
+async function completePurchase(){
+  const id='HM'+String(Date.now()).slice(-6);
+  const hmId=booking.hmId==='any'?null:booking.hmId;
+  const rec={id,cleaner_id:hmId,cleaner_name:booking.hmName,customer_fname:booking.fname,customer_lname:booking.lname,customer_email:booking.email,customer_phone:booking.phone,customer_address:booking.address,service_type:booking.serviceLabel,size_key:booking.service,size_label:booking.serviceLabel,amount:booking.price-booking.discount,booking_date:booking.date,booking_time:booking.time,notes:booking.jobDesc,status:'confirmed'};
+  await sb.from('bookings').insert(rec);
+  document.getElementById('confirm-details').innerHTML=`
+    <div class="confirm-row"><span>Job ID</span><span>${rec.id}</span></div>
+    <div class="confirm-row"><span>Handyman</span><span>${rec.cleaner_name}</span></div>
+    <div class="confirm-row"><span>Job size</span><span>${rec.service_type}</span></div>
+    <div class="confirm-row"><span>Date</span><span>${fmtDate(rec.booking_date)}</span></div>
+    <div class="confirm-row"><span>Time</span><span>${rec.booking_time}</span></div>
+    <div class="confirm-row"><span>Address</span><span>${rec.customer_address}</span></div>
+    <div class="confirm-row"><span>Total paid</span><span style="color:var(--navy);font-weight:700">${rec.amount?'$'+rec.amount:'TBD'}</span></div>`;
+  showScreen('confirm');
+}
+
+// ── SIGNUP ──
+function initTierRows(id){
+  document.getElementById(id).innerHTML=JOB_SIZES.filter(j=>j.key!=='multi').map(j=>`
+    <div class="tier-row" data-key="${j.key}">
+      <div class="tier-label">${j.label}</div>
+      <input type="number" class="tier-rate" value="${j.price}" min="${j.floor}" placeholder="$${j.floor}+"/>
+    </div>`).join('');
+}
+
+function toggleDay(el,day){
+  el.classList.toggle('selected');
+  if(el.classList.contains('selected')){if(!selectedDays.includes(day))selectedDays.push(day);}
+  else{selectedDays=selectedDays.filter(d=>d!==day);}
+}
+
+function previewPhoto(input){
+  if(!input.files||!input.files[0])return;
+  const r=new FileReader();
+  r.onload=e=>{const img=document.getElementById('cs-photo-preview');img.src=e.target.result;img.style.display='block';document.getElementById('cs-photo-placeholder').style.display='none';};
+  r.readAsDataURL(input.files[0]);
+}
+
+async function submitSignup(){
+  const fname=document.getElementById('cs-fname').value.trim();
+  const lname=document.getElementById('cs-lname').value.trim();
+  const email=document.getElementById('cs-email').value.trim();
+  const password=document.getElementById('cs-password').value;
+  const phone=document.getElementById('cs-phone').value.trim();
+  const bio=document.getElementById('cs-bio').value.trim();
+  const areas=document.getElementById('cs-areas').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const specialties=Array.from(document.querySelectorAll('#specialty-grid input:checked')).map(el=>el.value);
+  const errEl=document.getElementById('signup-error');
+  if(!fname||!lname)return showErr(errEl,'Please enter your name.');
+  if(!email||!email.includes('@'))return showErr(errEl,'Please enter a valid email.');
+  if(password.length<8)return showErr(errEl,'Password must be at least 8 characters.');
+  if(areas.length===0)return showErr(errEl,'Please enter at least one service area.');
+  if(selectedDays.length===0)return showErr(errEl,'Please select at least one availability day.');
+  if(!document.getElementById('agreement-check').checked)return showErr(errEl,'Please read and accept the service agreement.');
+  errEl.style.display='none';
+  const btn=document.querySelector('#screen-signup .btn-primary');
+  btn.textContent='Submitting…';btn.disabled=true;
+  const {data:authData,error:authErr}=await sb.auth.signUp({email,password});
+  if(authErr){btn.textContent='Submit application →';btn.disabled=false;return showErr(errEl,authErr.message);}
+  const userId=authData.user?.id;
+  let photoUrl='';
+  const photoInput=document.getElementById('cs-photo-input');
+  if(photoInput.files&&photoInput.files[0]&&userId){
+    const file=photoInput.files[0];const ext=file.name.split('.').pop();
+    const {error:ue}=await sb.storage.from('cleaner-photos').upload(`${userId}/profile.${ext}`,file,{upsert:true});
+    if(!ue){const {data:ud}=sb.storage.from('cleaner-photos').getPublicUrl(`${userId}/profile.${ext}`);photoUrl=ud?.publicUrl||'';}
+  }
+  const agreementAt=new Date().toISOString();
+  const {data:hmData,error:hmErr}=await sb.from('cleaners').insert({user_id:userId,first_name:fname,last_name:lname,email,phone,bio,photo_url:photoUrl,service_areas:[...areas,...specialties],status:'pending',agreement_accepted:true,agreement_accepted_at:agreementAt}).select().single();
+  if(hmErr){btn.textContent='Submit application →';btn.disabled=false;return showErr(errEl,hmErr.message);}
+  const hmId=hmData.id;
+  const startTime=document.getElementById('cs-start-time').value;
+  const endTime=document.getElementById('cs-end-time').value;
+  if(selectedDays.length){await sb.from('availability').insert(selectedDays.map(d=>({cleaner_id:hmId,day_of_week:d,start_time:startTime,end_time:endTime,is_available:true})));}
+  const tiers=Array.from(document.querySelectorAll('#tier-rows .tier-row')).map(row=>({cleaner_id:hmId,size_key:row.dataset.key,size_label:JOB_SIZES.find(j=>j.key===row.dataset.key)?.label,standard:parseInt(row.querySelector('.tier-rate').value)||0,deep:parseInt(row.querySelector('.tier-rate').value)||0,moveinout:parseInt(row.querySelector('.tier-rate').value)||0}));
+  if(tiers.length)await sb.from('tiers').insert(tiers);
+  toast('Application submitted! We\'ll be in touch soon.','success');
+  btn.textContent='Submit application →';btn.disabled=false;
+  document.getElementById('screen-signup').innerHTML=`<nav><div class="nav-brand" onclick="showScreen('home')">Hande<span>monium</span></div></nav><div class="confirm-wrap"><div class="confirm-icon">⚒</div><h2>Application submitted!</h2><p>Thanks ${fname}! We'll review your application and get back to you within 1–2 business days.</p><button class="btn-primary" onclick="showScreen('home')">Back to home</button></div>`;
+}
+
+function showErr(el,msg){el.textContent=msg;el.style.display='block';el.scrollIntoView({behavior:'smooth',block:'center'});}
+
+// ── PORTAL ──
+async function doLogin(){
+  const email=document.getElementById('cl-email').value.trim();
+  const password=document.getElementById('cl-password').value;
+  const errEl=document.getElementById('login-error');errEl.style.display='none';
+  const {data,error}=await sb.auth.signInWithPassword({email,password});
+  if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
+  const {data:hm,error:he}=await sb.from('cleaners').select('*').eq('user_id',data.user.id).single();
+  if(he||!hm){errEl.textContent='No profile found for this account.';errEl.style.display='block';await sb.auth.signOut();return;}
+  currentHM=hm;await loadPortal();showScreen('portal');
+}
+
+async function loadPortal(){
+  if(!currentHM)return;
+  document.getElementById('portal-hm-name').textContent=currentHM.first_name+' '+(currentHM.last_name||'');
+  const sm={pending:'badge-orange',approved:'badge-green',rejected:'badge-red'};
+  document.getElementById('portal-status-badge').innerHTML=`<span class="badge ${sm[currentHM.status]||'badge-gray'}">${currentHM.status}</span>${currentHM.status==='pending'?' <span style="font-size:13px;color:var(--muted)">— under review</span>':''}`;
+  const initials=(currentHM.first_name[0]||'')+(currentHM.last_name?currentHM.last_name[0]:'');
+  document.getElementById('portal-avatar').innerHTML=currentHM.photo_url?`<img src="${currentHM.photo_url}" style="width:72px;height:72px;border-radius:50%;object-fit:cover"/>`:`<span>${initials}</span>`;
+  document.getElementById('portal-fname').value=currentHM.first_name||'';
+  document.getElementById('portal-lname').value=currentHM.last_name||'';
+  document.getElementById('portal-phone').value=currentHM.phone||'';
+  document.getElementById('portal-bio').value=currentHM.bio||'';
+  document.getElementById('portal-areas').value=Array.isArray(currentHM.service_areas)?currentHM.service_areas.join(', '):(currentHM.service_areas||'');
+  const {data:avail}=await sb.from('availability').select('*').eq('cleaner_id',currentHM.id);
+  portalDays=avail?avail.filter(a=>a.is_available).map(a=>a.day_of_week):[];
+  renderPortalDays();
+  if(avail&&avail[0]){document.getElementById('portal-start').value=avail[0].start_time||'9:00 AM';document.getElementById('portal-end').value=avail[0].end_time||'5:00 PM';}
+  const {data:bd}=await sb.from('blocked_dates').select('*').eq('cleaner_id',currentHM.id).order('blocked_date');
+  blockedDates=bd||[];renderBlockedList();
+  const {data:tiers}=await sb.from('tiers').select('*').eq('cleaner_id',currentHM.id);
+  document.getElementById('portal-tier-rows').innerHTML=JOB_SIZES.filter(j=>j.key!=='multi').map(j=>{const ex=tiers?tiers.find(t=>t.size_key===j.key):null;return `<div class="tier-row" data-key="${j.key}"><div class="tier-label">${j.label}</div><input type="number" class="portal-rate" value="${ex?.standard||j.price}" min="${j.floor}"/></div>`;}).join('');
+  const {data:jobs}=await sb.from('bookings').select('*').eq('cleaner_id',currentHM.id).order('booking_date',{ascending:false});
+  const tbody=document.getElementById('portal-jobs-tbody');
+  tbody.innerHTML=!jobs||!jobs.length?'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">No jobs yet</td></tr>':jobs.map(b=>`<tr><td style="font-weight:500;color:var(--navy)">${b.id}</td><td>${b.customer_fname} ${b.customer_lname}</td><td>${b.service_type}</td><td>${fmtDate(b.booking_date)}<br><span style="font-size:12px;color:var(--muted)">${b.booking_time}</span></td><td style="font-weight:500;color:var(--navy)">${b.amount?'$'+b.amount:'TBD'}</td><td>${statusBadge(b.status)}</td></tr>`).join('');
+}
+
+function renderPortalDays(){
+  document.getElementById('portal-day-grid').innerHTML=DAYS.map(d=>`<div class="day-opt ${portalDays.includes(d)?'selected':''}" onclick="togglePortalDay(this,'${d}')">${DAY_LABELS[d]}</div>`).join('');
+}
+function togglePortalDay(el,day){el.classList.toggle('selected');if(el.classList.contains('selected')){if(!portalDays.includes(day))portalDays.push(day);}else{portalDays=portalDays.filter(d=>d!==day);}}
+async function saveProfile(){
+  const u={first_name:document.getElementById('portal-fname').value.trim(),last_name:document.getElementById('portal-lname').value.trim(),phone:document.getElementById('portal-phone').value.trim(),bio:document.getElementById('portal-bio').value.trim(),service_areas:document.getElementById('portal-areas').value.split(',').map(s=>s.trim()).filter(Boolean),updated_at:new Date().toISOString()};
+  const {error}=await sb.from('cleaners').update(u).eq('id',currentHM.id);
+  if(error){toast('Error: '+error.message,'error');return;}Object.assign(currentHM,u);toast('Profile saved!');
+}
+async function uploadPhoto(input){
+  if(!input.files||!input.files[0]||!currentHM)return;
+  const file=input.files[0];const ext=file.name.split('.').pop();const path=`${currentHM.user_id}/profile.${ext}`;
+  const {error}=await sb.storage.from('cleaner-photos').upload(path,file,{upsert:true});
+  if(error){toast('Upload failed','error');return;}
+  const {data:ud}=sb.storage.from('cleaner-photos').getPublicUrl(path);
+  await sb.from('cleaners').update({photo_url:ud?.publicUrl}).eq('id',currentHM.id);
+  document.getElementById('portal-avatar').innerHTML=`<img src="${ud?.publicUrl}" style="width:72px;height:72px;border-radius:50%;object-fit:cover"/>`;
+  toast('Photo updated!');
+}
+async function saveAvail(){
+  await sb.from('availability').delete().eq('cleaner_id',currentHM.id);
+  if(portalDays.length){const s=document.getElementById('portal-start').value;const e=document.getElementById('portal-end').value;await sb.from('availability').insert(portalDays.map(d=>({cleaner_id:currentHM.id,day_of_week:d,start_time:s,end_time:e,is_available:true})));}
+  toast('Availability saved!');
+}
+async function addBlock(){
+  const date=document.getElementById('block-date-input').value;const reason=document.getElementById('block-date-reason').value.trim();
+  if(!date){toast('Please select a date','error');return;}
+  await sb.from('blocked_dates').insert({cleaner_id:currentHM.id,blocked_date:date,reason});
+  blockedDates.push({blocked_date:date,reason});blockedDates.sort((a,b)=>a.blocked_date.localeCompare(b.blocked_date));
+  renderBlockedList();document.getElementById('block-date-input').value='';document.getElementById('block-date-reason').value='';toast('Date blocked!');
+}
+function renderBlockedList(){
+  const c=document.getElementById('blocked-list');
+  c.innerHTML=!blockedDates.length?'<p style="font-size:13px;color:var(--muted)">No blocked dates.</p>':blockedDates.map(b=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--border);font-size:14px;"><div><span style="font-weight:500">${fmtDate(b.blocked_date)}</span>${b.reason?`<span style="color:var(--muted);font-size:12px;margin-left:.5rem">— ${b.reason}</span>`:''}</div><button class="btn-ghost" style="font-size:12px;padding:4px 10px;color:var(--danger);border-color:var(--danger)" onclick="removeBlock('${b.blocked_date}')">Remove</button></div>`).join('');
+}
+async function removeBlock(date){await sb.from('blocked_dates').delete().eq('cleaner_id',currentHM.id).eq('blocked_date',date);blockedDates=blockedDates.filter(b=>b.blocked_date!==date);renderBlockedList();toast('Date unblocked!');}
+async function saveRates(){
+  await sb.from('tiers').delete().eq('cleaner_id',currentHM.id);
+  const rows=Array.from(document.querySelectorAll('#portal-tier-rows .tier-row'));
+  const tiers=rows.map(r=>({cleaner_id:currentHM.id,size_key:r.dataset.key,size_label:JOB_SIZES.find(j=>j.key===r.dataset.key)?.label,standard:parseInt(r.querySelector('.portal-rate').value)||0,deep:parseInt(r.querySelector('.portal-rate').value)||0,moveinout:parseInt(r.querySelector('.portal-rate').value)||0}));
+  const {error}=await sb.from('tiers').insert(tiers);
+  if(error){toast('Error: '+error.message,'error');return;}toast('Rates saved!');
+}
+function switchTab(tab,el){document.querySelectorAll('.portal-section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.portal-sidebar .nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('portal-'+tab).classList.add('active');el.classList.add('active');}
+async function doLogout(){await sb.auth.signOut();currentHM=null;showScreen('home');}
+
+// ── ADMIN ──
+function checkAdmin(){
+  const pw=document.getElementById('admin-pw').value;
+  if(pw==='chaos2024'){
+    document.getElementById('admin-error').style.display='none';
+    document.getElementById('admin-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+    renderAdminJobs();renderAdminCrew();showScreen('admin');
+  } else {document.getElementById('admin-error').style.display='block';}
+}
+async function renderAdminJobs(){
+  const {data:jobs}=await sb.from('bookings').select('*').order('booking_date',{ascending:false});
+  const all=jobs||[];
+  const total=all.reduce((s,b)=>s+(b.amount||0),0);
+  document.getElementById('metrics-grid').innerHTML=`
+    <div class="metric-card"><div class="metric-label">Total jobs</div><div class="metric-val">${all.length}</div></div>
+    <div class="metric-card"><div class="metric-label">Revenue</div><div class="metric-val">$${total.toLocaleString()}</div></div>
+    <div class="metric-card"><div class="metric-label">This week</div><div class="metric-val">${all.filter(b=>{const d=new Date(b.booking_date);const n=new Date();return d>=n&&d<=new Date(n.getTime()+7*24*60*60*1000);}).length}</div></div>
+    <div class="metric-card"><div class="metric-label">Avg job</div><div class="metric-val">${all.length&&total?'$'+Math.round(total/all.filter(b=>b.amount).length):'-'}</div></div>`;
+  document.getElementById('bookings-tbody').innerHTML=!all.length?'<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">No jobs yet</td></tr>':all.map(b=>`<tr><td style="font-weight:500;color:var(--navy)">${b.id}</td><td><div style="font-weight:500">${b.customer_fname} ${b.customer_lname}</div><div style="font-size:12px;color:var(--muted)">${b.customer_email}</div></td><td>${b.cleaner_name||'—'}</td><td>${b.service_type}</td><td>${fmtDate(b.booking_date)}</td><td>${b.booking_time}</td><td style="font-weight:500;color:var(--navy)">${b.amount?'$'+b.amount:'TBD'}</td><td>${statusBadge(b.status)}</td></tr>`).join('');
+}
+async function renderAdminCrew(){
+  const {data:crew}=await sb.from('cleaners').select('*').order('created_at',{ascending:false});
+  if(!crew)return;
+  const pending=crew.filter(c=>c.status==='pending');
+  const badge=document.getElementById('pending-count-badge');
+  if(pending.length)badge.innerHTML=`<span class="badge badge-orange" style="margin-left:6px">${pending.length}</span>`;
+  document.getElementById('pending-list').innerHTML=!pending.length?'<div style="color:var(--muted);padding:2rem;text-align:center">No pending applications.</div>':pending.map(c=>{
+    const initials=(c.first_name[0]||'')+(c.last_name?c.last_name[0]:'');
+    const photoHtml=c.photo_url?`<img src="${c.photo_url}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--border)" alt="${c.first_name}"/>`:`<div style="width:64px;height:64px;border-radius:50%;background:var(--navy-lt);color:var(--navy);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:22px;font-weight:700;flex-shrink:0;">${initials}</div>`;
+    return `<div class="pending-card">${photoHtml}<div class="pending-info" style="flex:1"><h4>${c.first_name} ${c.last_name||''}</h4><p>${c.email} · ${c.phone||'no phone'}</p><p style="margin-top:4px">${Array.isArray(c.service_areas)?c.service_areas.join(', '):(c.service_areas||'')}</p>${c.bio?`<p style="margin-top:6px;font-style:italic;color:var(--muted)">"${c.bio.substring(0,120)}…"</p>`:''}<p style="margin-top:6px;font-size:12px">${c.agreement_accepted?`<span style="color:#2e7d32">✓ Agreement signed ${new Date(c.agreement_accepted_at).toLocaleDateString()}</span>`:'<span style="color:var(--danger)">⚠ Agreement not signed</span>'}</p></div><div class="pending-actions"><button class="btn-primary btn-sm" onclick="approveReject('${c.id}','approved')">✓ Approve</button><button class="btn-danger btn-sm" onclick="approveReject('${c.id}','rejected')">✗ Reject</button></div></div>`;
+  }).join('');
+  document.getElementById('crew-tbody').innerHTML=crew.map(c=>`<tr><td style="font-weight:500">${c.first_name} ${c.last_name||''}</td><td style="font-size:13px;color:var(--muted)">${c.email}</td><td style="font-size:13px">${Array.isArray(c.service_areas)?c.service_areas.join(', '):(c.service_areas||'—')}</td><td style="font-size:13px">${Array.isArray(c.service_areas)?c.service_areas.slice(0,2).join(', '):'—'}</td><td style="font-size:13px;color:var(--muted)">${new Date(c.created_at).toLocaleDateString()}</td><td>${statusBadge(c.status)}</td><td>${c.status!=='approved'?`<button class="btn-ghost btn-sm" style="margin-right:4px" onclick="approveReject('${c.id}','approved')">Approve</button>`:''}${c.status!=='rejected'?`<button class="btn-ghost btn-sm" style="color:var(--danger);border-color:var(--danger)" onclick="approveReject('${c.id}','rejected')">Reject</button>`:''}</td></tr>`).join('');
+}
+async function approveReject(id,status){
+  await sb.from('cleaners').update({status}).eq('id',id);
+  toast(status==='approved'?'✓ Crew member approved and live!':'Crew member rejected.',status==='approved'?'success':'error');
+  renderAdminCrew();loadCrew();
+}
+function switchAdminTab(tab,el){document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));document.getElementById('admin-'+tab).classList.add('active');el.classList.add('active');}
+
+
+function checkAgreement(){
+  const checked = document.getElementById('agreement-check').checked;
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = !checked;
+  btn.style.opacity = checked ? '1' : '0.5';
+  btn.style.cursor = checked ? 'pointer' : 'not-allowed';
+}
+
+// ── INIT ──
+initTierRows('tier-rows');
+loadCrew();
+sb.auth.getSession().then(({data})=>{if(data?.session){sb.from('cleaners').select('*').eq('user_id',data.session.user.id).single().then(({data:hm})=>{if(hm)currentHM=hm;});}});
+</script>
+</body>
+</html>
